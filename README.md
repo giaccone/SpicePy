@@ -3,6 +3,6 @@
 
 **spicethon** borns as a teaching project. It is shared with students of *basic circuit theory* with two aims:
 
-* to allow them to check the results exercises solved analytically
+* to allow them to check the results of exercises solved analytically
 * to show them how a numerical code to solve circuit is made
 
