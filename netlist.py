@@ -30,7 +30,8 @@ class Network():
     """
 
     def __init__(self, filename):
-        (self.G,
+        (self.A,
+         self.G,
          self.rhs) = self.read_netlist(filename)
 
     def read_netlist(self, filename):
@@ -46,6 +47,11 @@ class Network():
         # initialize counter for number of nodes
         Nn = 0
 
+        # initialize incidence matrix terms
+        a = []
+        a_row = []
+        a_col = []
+
         # initialize conductance terms
         g = []
         g_row = []
@@ -57,15 +63,39 @@ class Network():
         # read netlist
         with open(filename) as f:
             # cycle on lines
-            for line in f:
+            for b, line in enumerate(f):
                 # split into a list
                 sline = line.split()
 
+                # get branch nodes
+                N1 = int(sline[1])
+                N2 = int(sline[2])
+
+                # ===================
+                # incidence matrix
+                # ===================
+                if N1 == 0:
+                    a.append(-1)
+                    a_row.append(N2 - 1)
+                    a_col.append(b)
+                elif N2 == 0:
+                    a.append(1)
+                    a_row.append(N1 - 1)
+                    a_col.append(b)
+                else:
+                    a.append(1)
+                    a_row.append(N1 - 1)
+                    a_col.append(b)
+                    a.append(-1)
+                    a_row.append(N2 - 1)
+                    a_col.append(b)
+
+                # ===================
+                # conductance matrix
+                # ===================
+                #
                 # detect element type
-                if sline[0][0] == 'R': # resistance
-                    # get nodes
-                    N1 = int(sline[1])
-                    N2 = int(sline[2])
+                if sline[0][0].upper() == 'R': # resistance
 
                     # detect connection
                     if (N1 == 0) or (N2 == 0): # if grounded...
@@ -100,7 +130,8 @@ class Network():
                         # update counter
                         Nn += 1
 
-                elif sline[0][0] == 'V': # independent voltage sources
+                # temporary storage of voltage sources
+                elif sline[0][0].upper() == 'V': # independent voltage sources
                     # create temporary list
                     Vsource.append(sline)
 
@@ -166,8 +197,10 @@ class Network():
                 # update rhs
                 rhs.append(float(vs[3]))
 
+        # create conductance matrix
+        A = csr_matrix((a, (a_row, a_col)))
 
         # create conductance matrix
         G = csr_matrix((g,(g_row,g_col)))
 
-        return G, rhs
+        return A, G, rhs
