@@ -23,6 +23,7 @@ class Network():
     Class that defines the network.
 
     Attributes:
+        * self.A: incidence matrix, node-2-branch
         * self.G: conductance matrix
         * self.rhs: right hand side
     Methods:
@@ -40,8 +41,9 @@ class Network():
 
         :param filename: file name with the netlist
         :return: tuple including:
+            * A incidence matrix, node-2-branch (in sparse form)
             * G conductance matrix (in sparse form)
-            * rhs right end side (returned as a list)
+            * rhs right end side (in sparse form)
         """
 
         # initialize counter for number of nodes
@@ -56,6 +58,11 @@ class Network():
         g = []
         g_row = []
         g_col = []
+
+        # initialize rhs terms
+        rhs = []
+        rhs_row = []
+        rhs_col = []
 
         # initialize source terms
         Vsource = []
@@ -105,7 +112,8 @@ class Network():
                         g_col.append(max([N1, N2]) - 1)
 
                         # update counter
-                        Nn += 1
+                        Nn  = max([N1, N2, Nn])
+
                     else:                     # if not grounded...
                         # diagonal term
                         g.append(1.0 / float(sline[3]))
@@ -128,15 +136,46 @@ class Network():
                         g_col.append(N1 - 1)
 
                         # update counter
-                        Nn += 1
+                        Nn  = max([N1, N2, Nn])
+
+                # ideal current source
+                elif sline[0][0].upper() == 'I':
+                    if N1 == 0:
+                        rhs.append(float(sline[3]))
+                        rhs_row.append(N2 - 1)
+                        rhs_col.append(0)
+
+                        # update counter
+                        Nn  = max([N1, N2, Nn])
+
+                    elif N2 == 0:
+                        rhs.append(-float(sline[3]))
+                        rhs_row.append(N1 - 1)
+                        rhs_col.append(0)
+
+                        # update counter
+                        Nn  = max([N1, N2, Nn])
+                    else:
+                        rhs.append(-float(sline[3]))
+                        rhs_row.append(N1 - 1)
+                        rhs_col.append(0)
+
+                        rhs.append(float(sline[3]))
+                        rhs_row.append(N2 - 1)
+                        rhs_col.append(0)
+
+                        # update counter
+                        Nn  = max([N1, N2, Nn])
+
 
                 # temporary storage of voltage sources
                 elif sline[0][0].upper() == 'V': # independent voltage sources
                     # create temporary list
                     Vsource.append(sline)
 
-        # initialization of rhs
-        rhs = [0] * Nn
+                    # update counter
+                    Nn  = max([N1, N2, Nn])
+
 
         # ideal voltage sources assignment
         for k, vs in enumerate(Vsource):
@@ -158,6 +197,8 @@ class Network():
 
                 # update rhs
                 rhs.append(float(vs[3]))
+                rhs_row.append(Nn + k)
+                rhs_col.append(0)
 
             elif N2 == 0:               # if grounded to N2 ...
                 # positive terminal
@@ -172,6 +213,8 @@ class Network():
 
                 # update rhs
                 rhs.append(float(vs[3]))
+                rhs_row.append(Nn + k)
+                rhs_col.append(0)
 
             else:                      # if not grounded ...
                 # positive terminal
@@ -196,11 +239,16 @@ class Network():
 
                 # update rhs
                 rhs.append(float(vs[3]))
+                rhs_row.append(Nn + k)
+                rhs_col.append(0)
 
         # create conductance matrix
         A = csr_matrix((a, (a_row, a_col)))
 
         # create conductance matrix
         G = csr_matrix((g,(g_row,g_col)))
+
+        # create conductance matrix
+        rhs = csr_matrix((rhs,(rhs_row,rhs_col)))
 
         return A, G, rhs
