@@ -5,4 +5,3 @@
 
 * to allow them to check the results of exercises solved analytically
 * to show them how a numerical code to solve circuit is made
-
