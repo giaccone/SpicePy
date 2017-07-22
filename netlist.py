@@ -33,7 +33,9 @@ class Network():
     def __init__(self, filename):
         (self.A,
          self.G,
-         self.rhs) = self.read_netlist(filename)
+         self.rhs,
+         self.node_num,
+         self.names) = self.read_netlist(filename)
 
     def read_netlist(self, filename):
         """
@@ -48,6 +50,9 @@ class Network():
 
         # initialize counter for number of nodes
         Nn = 0
+
+        # initialize variable names
+        names = []
 
         # initialize incidence matrix terms
         a = []
@@ -103,6 +108,8 @@ class Network():
                 #
                 # detect element type
                 if sline[0][0].upper() == 'R': # resistance
+                    # add name
+                    names.append(sline[0])
 
                     # detect connection
                     if (N1 == 0) or (N2 == 0): # if grounded...
@@ -140,6 +147,9 @@ class Network():
 
                 # ideal current source
                 elif sline[0][0].upper() == 'I':
+                    # add name
+                    names.append(sline[0])
+
                     if N1 == 0:
                         rhs.append(float(sline[3]))
                         rhs_row.append(N2 - 1)
@@ -170,6 +180,9 @@ class Network():
 
                 # temporary storage of voltage sources
                 elif sline[0][0].upper() == 'V': # independent voltage sources
+                    # add name
+                    names.append(sline[0])
+
                     # create temporary list
                     Vsource.append(sline)
 
@@ -251,4 +264,34 @@ class Network():
         # create conductance matrix
         rhs = csr_matrix((rhs,(rhs_row,rhs_col)))
 
-        return A, G, rhs
+        return A, G, rhs, Nn, names
+
+
+    def dc_solve(self):
+        """
+        "dc_solve" computes the DC operating point
+
+        :return:
+            * self.x
+        """
+        from scipy.sparse.linalg import spsolve
+        self.x = spsolve(self.G, self.rhs)
+
+
+    def branch_voltages(self, verbose='y'):
+        """
+        "branch_voltages"  computes the branch voltages
+
+        :param verbose: set to 'y/n' to print results (default 'y')
+        :return:
+            * self.vb
+        """
+        self.vb = self.A.transpose() * self.x[:self.node_num]
+
+        if verbose == 'y':
+            print('=====================')
+            print('   branch voltages   ')
+            print('=====================')
+
+            for var, volt in zip(self.names, self.vb):
+                print('v({}) = {:6.4f} V'.format(var, volt))
