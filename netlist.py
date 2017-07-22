@@ -278,9 +278,9 @@ class Network():
         self.x = spsolve(self.G, self.rhs)
 
 
-    def branch_voltages(self, verbose='y'):
+    def branch_voltage(self, verbose='y'):
         """
-        "branch_voltages"  computes the branch voltages
+        "branch_voltage"  computes the branch voltages
 
         :param verbose: set to 'y/n' to print results (default 'y')
         :return:
