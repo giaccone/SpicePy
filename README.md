@@ -20,7 +20,6 @@ I1 2 1 2
 one can solve it executing the following script:
 ```python
 import netlist as ntl
-import scipy.sparse.linalg as ssl
 
 net = ntl.Network('network.net')
 net.dc_solve()
