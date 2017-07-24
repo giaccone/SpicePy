@@ -286,12 +286,55 @@ class Network():
         :return:
             * self.vb
         """
-        self.vb = self.A.transpose() * self.x[:self.node_num]
+        # branch voltages
+        if not hasattr(self, 'vb'):
+            self.vb = self.A.transpose() * self.x[:self.node_num]
 
+        # sorting index
+        if not hasattr(self, 'isort'):
+            self.reorder()
+
+        # print results
         if verbose == 'y':
             print('=====================')
             print('   branch voltages   ')
             print('=====================')
 
-            for var, volt in zip(self.names, self.vb):
-                print('v({}) = {:6.4f} V'.format(var, volt))
+            for k, index in enumerate(self.isort):
+                if k == 0: # resistors
+                    for h in index:
+                        print('v({}) = {:6.4f} V'.format(self.names[h], self.vb[h]))
+                elif k == 1: # voltage sources
+                    for h in index:
+                        print('v({}) = {:6.4f} V'.format(self.names[h], self.vb[h]))
+                elif k == 2: # current sources
+                    for h in index:
+                        print('v({}) = {:6.4f} V'.format(self.names[h], self.vb[h]))
+                print('---------------------')
+
+            #for var, volt in zip(self.names, self.vb):
+            #    print('v({}) = {:6.4f} V'.format(var, volt))
+
+
+    def reorder(self):
+        """
+        'reorder' reorder the netlist
+
+        :return:
+            * self.isort
+        """
+        ires = []
+        ivolt = []
+        icur = []
+        for k,ele in enumerate(self.names):
+            if ele[0].upper() == 'R':
+                ires.append([int(ele[1]),k])
+            elif ele[0].upper() == 'V':
+                ivolt.append([int(ele[1]),k])
+            elif ele[0].upper() == 'I':
+                icur.append([int(ele[1]),k])
+
+        self.isort = []
+        self.isort.append([k for foo, k in sorted(ires)])
+        self.isort.append([k for foo, k in sorted(ivolt)])
+        self.isort.append([k for foo, k in sorted(icur)])
