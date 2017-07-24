@@ -35,7 +35,9 @@ class Network():
          self.G,
          self.rhs,
          self.node_num,
-         self.names) = self.read_netlist(filename)
+         self.names,
+         self.values) = self.read_netlist(filename)
+
 
     def read_netlist(self, filename):
         """
@@ -51,8 +53,9 @@ class Network():
         # initialize counter for number of nodes
         Nn = 0
 
-        # initialize variable names
+        # initialize variable names and values
         names = []
+        values = []
 
         # initialize incidence matrix terms
         a = []
@@ -108,8 +111,9 @@ class Network():
                 #
                 # detect element type
                 if sline[0][0].upper() == 'R': # resistance
-                    # add name
+                    # add name and value
                     names.append(sline[0])
+                    values.append(float(sline[3]))
 
                     # detect connection
                     if (N1 == 0) or (N2 == 0): # if grounded...
@@ -147,8 +151,9 @@ class Network():
 
                 # ideal current source
                 elif sline[0][0].upper() == 'I':
-                    # add name
+                    # add name and value
                     names.append(sline[0])
+                    values.append(float(sline[3]))
 
                     if N1 == 0:
                         rhs.append(float(sline[3]))
@@ -180,8 +185,9 @@ class Network():
 
                 # temporary storage of voltage sources
                 elif sline[0][0].upper() == 'V': # independent voltage sources
-                    # add name
+                    # add name and value
                     names.append(sline[0])
+                    values.append(float(sline[3]))
 
                     # create temporary list
                     Vsource.append(sline)
@@ -264,7 +270,7 @@ class Network():
         # create conductance matrix
         rhs = csr_matrix((rhs,(rhs_row,rhs_col)))
 
-        return A, G, rhs, Nn, names
+        return A, G, rhs, Nn, names, values
 
 
     def dc_solve(self):
@@ -278,42 +284,41 @@ class Network():
         self.x = spsolve(self.G, self.rhs)
 
 
-    def branch_voltage(self, verbose='y'):
+    def branch_voltage(self):
         """
         "branch_voltage"  computes the branch voltages
 
-        :param verbose: set to 'y/n' to print results (default 'y')
         :return:
             * self.vb
         """
         # branch voltages
+        self.vb = self.A.transpose() * self.x[:self.node_num]
+
+
+    def branch_current(self, verbose='y'):
+        """
+        "branch_current"  computes the branch currents
+
+        :param verbose: set to 'y/n' to print results (default 'y')
+        :return:
+            * self.ib
+        """
+        # check if branch voltages are already computed
         if not hasattr(self, 'vb'):
-            self.vb = self.A.transpose() * self.x[:self.node_num]
+            self.branch_voltage()
 
-        # sorting index
-        if not hasattr(self, 'isort'):
-            self.reorder()
+        ib = []
+        cnt_v = 0
+        for name, val, voltage in zip(self.names, self.values, self.vb):
+            if name[0].upper() == 'R':
+                ib.append(voltage/val)
+            elif name[0].upper() == 'V':
+                ib.append(self.x[self.node_num + cnt_v])
+                cnt_v += 1
+            elif name[0].upper() == 'I':
+                ib.append(val)
 
-        # print results
-        if verbose == 'y':
-            print('=====================')
-            print('   branch voltages   ')
-            print('=====================')
-
-            for k, index in enumerate(self.isort):
-                if k == 0: # resistors
-                    for h in index:
-                        print('v({}) = {:6.4f} V'.format(self.names[h], self.vb[h]))
-                elif k == 1: # voltage sources
-                    for h in index:
-                        print('v({}) = {:6.4f} V'.format(self.names[h], self.vb[h]))
-                elif k == 2: # current sources
-                    for h in index:
-                        print('v({}) = {:6.4f} V'.format(self.names[h], self.vb[h]))
-                print('---------------------')
-
-            #for var, volt in zip(self.names, self.vb):
-            #    print('v({}) = {:6.4f} V'.format(var, volt))
+        self.ib = ib
 
 
     def reorder(self):
