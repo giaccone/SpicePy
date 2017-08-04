@@ -1,7 +1,7 @@
 # ===========================================================
 # About the code
 # ===========================================================
-# This code is part of the project 'spicethon'.
+# This code is part of the project 'SpicePy'.
 # See README.md for more details
 #
 # Licensed under the MIT license (see LICENCE)
@@ -22,21 +22,42 @@ class Network():
     """
     Class that defines the network.
 
-    Attributes:
-        * self.A: incidence matrix, node-2-branch
-        * self.G: conductance matrix
-        * self.rhs: right hand side
+    Basilar attributes (always assigned):
+        * self.names: component names
+        * self.values: component values
+        * self.nodes: component nodes (only two-port right now)
+        * self.node_num: number of nodes in the network
+    Other attributes (default is None):
+        * self.A:
+        * self.G:
+        * self.rhs:
+        * self.isort:
+        * self.x:
+        * self.vb:
+        * self.ib:
     Methods:
-        * read_netlist: reads a SPICE netlist (used by '__init__')
+        * read_netlist(self): reads a SPICE netlist (used by '__init__')
+        * incidence_matrix(self):
     """
 
     def __init__(self, filename):
-        (self.A,
-         self.G,
-         self.rhs,
-         self.node_num,
-         self.names,
-         self.values) = self.read_netlist(filename)
+        """
+        TO DO...
+        """
+        # basilar attributes
+        (self.names,
+         self.values,
+         self.nodes,
+         self.node_num) = self.read_netlist(filename)
+
+        # initialization of other possible attributes
+        self.A = None
+        self.G = None
+        self.rhs = None
+        self.isort = None
+        self.x = None
+        self.vb = None
+        self.ib = None
 
 
     def read_netlist(self, filename):
@@ -56,24 +77,7 @@ class Network():
         # initialize variable names and values
         names = []
         values = []
-
-        # initialize incidence matrix terms
-        a = []
-        a_row = []
-        a_col = []
-
-        # initialize conductance terms
-        g = []
-        g_row = []
-        g_col = []
-
-        # initialize rhs terms
-        rhs = []
-        rhs_row = []
-        rhs_col = []
-
-        # initialize source terms
-        Vsource = []
+        nodes = []
 
         # read netlist
         with open(filename) as f:
@@ -86,239 +90,228 @@ class Network():
                 N1 = int(sline[1])
                 N2 = int(sline[2])
 
-                # ===================
-                # incidence matrix
-                # ===================
-                if N1 == 0:
-                    a.append(-1)
-                    a_row.append(N2 - 1)
-                    a_col.append(b)
-                elif N2 == 0:
-                    a.append(1)
-                    a_row.append(N1 - 1)
-                    a_col.append(b)
-                else:
-                    a.append(1)
-                    a_row.append(N1 - 1)
-                    a_col.append(b)
-                    a.append(-1)
-                    a_row.append(N2 - 1)
-                    a_col.append(b)
-
-                # ===================
-                # conductance matrix
-                # ===================
-                #
                 # detect element type
                 if sline[0][0].upper() == 'R': # resistance
                     # add name and value
                     names.append(sline[0])
                     values.append(float(sline[3]))
-
-                    # detect connection
-                    if (N1 == 0) or (N2 == 0): # if grounded...
-                        # diagonal term
-                        g.append(1.0 / float(sline[3]))
-                        g_row.append(max([N1, N2]) - 1)
-                        g_col.append(max([N1, N2]) - 1)
-
-                        # update counter
-                        Nn  = max([N1, N2, Nn])
-
-                    else:                     # if not grounded...
-                        # diagonal term
-                        g.append(1.0 / float(sline[3]))
-                        g_row.append(N1 - 1)
-                        g_col.append(N1 - 1)
-
-                        # diagonal term
-                        g.append(1.0 / float(sline[3]))
-                        g_row.append(N2 - 1)
-                        g_col.append(N2 - 1)
-
-                        # N1-N2 term
-                        g.append(-1.0 / float(sline[3]))
-                        g_row.append(N1 - 1)
-                        g_col.append(N2 - 1)
-
-                        # N2-N1 term
-                        g.append(-1.0 / float(sline[3]))
-                        g_row.append(N2 - 1)
-                        g_col.append(N1 - 1)
-
-                        # update counter
-                        Nn  = max([N1, N2, Nn])
-
-                # ideal current source
-                elif sline[0][0].upper() == 'I':
-                    # add name and value
-                    names.append(sline[0])
-                    values.append(float(sline[3]))
-
-                    if N1 == 0:
-                        rhs.append(float(sline[3]))
-                        rhs_row.append(N2 - 1)
-                        rhs_col.append(0)
-
-                        # update counter
-                        Nn  = max([N1, N2, Nn])
-
-                    elif N2 == 0:
-                        rhs.append(-float(sline[3]))
-                        rhs_row.append(N1 - 1)
-                        rhs_col.append(0)
-
-                        # update counter
-                        Nn  = max([N1, N2, Nn])
-                    else:
-                        rhs.append(-float(sline[3]))
-                        rhs_row.append(N1 - 1)
-                        rhs_col.append(0)
-
-                        rhs.append(float(sline[3]))
-                        rhs_row.append(N2 - 1)
-                        rhs_col.append(0)
-
-                        # update counter
-                        Nn  = max([N1, N2, Nn])
-
-
-                # temporary storage of voltage sources
-                elif sline[0][0].upper() == 'V': # independent voltage sources
-                    # add name and value
-                    names.append(sline[0])
-                    values.append(float(sline[3]))
-
-                    # create temporary list
-                    Vsource.append(sline)
+                    nodes.append([N1, N2])
 
                     # update counter
                     Nn  = max([N1, N2, Nn])
 
+                # independent current source
+                elif sline[0][0].upper() == 'I':
+                    # add name and value
+                    names.append(sline[0])
+                    values.append(float(sline[3]))
+                    nodes.append([N1, N2])
 
-        # ideal voltage sources assignment
-        for k, vs in enumerate(Vsource):
+                    # update counter
+                    Nn  = max([N1, N2, Nn])
+
+                # independent voltage sources
+                elif sline[0][0].upper() == 'V': # independent voltage sources
+                    # add name and value
+                    names.append(sline[0])
+                    values.append(float(sline[3]))
+                    nodes.append([N1, N2])
+
+                    # # create temporary list
+                    # Vsource.append(sline)
+
+                    # update counter
+                    Nn  = max([N1, N2, Nn])
+
+        # return network structure
+        return names, values, nodes, Nn
+
+
+    def incidence_matrix(self):
+        """
+        'incidence_matrix' creates the branch-2-node incidence matrix
+
+        :return: update self with self.A
+        """
+
+        # initialize incidence matrix terms
+        a = []
+        a_row = []
+        a_col = []
+
+        # cycle on branches (N1 and N2)
+        for b, nodes in enumerate(self.nodes):
             # get nodes
-            N1 = int(vs[1])
-            N2 = int(vs[2])
+            N1, N2 = nodes
+
+            # detect connection to ground
+            if N1 == 0:
+                a.append(-1)
+                a_row.append(N2 - 1)
+                a_col.append(b)
+            elif N2 == 0:
+                a.append(1)
+                a_row.append(N1 - 1)
+                a_col.append(b)
+            else:
+                a.append(1)
+                a_row.append(N1 - 1)
+                a_col.append(b)
+                a.append(-1)
+                a_row.append(N2 - 1)
+                a_col.append(b)
+
+        # create conductance matrix
+        self.A = csr_matrix((a, (a_row, a_col)))
+
+
+    def conductance_matrix(self):
+        """
+        'conductance_matrix' creates the conductance matrix
+
+        :return: G, conductance matrix (including terms releted to independet voltage sources)
+        """
+        # initialize conductance terms
+        g = []
+        g_row = []
+        g_col = []
+
+        # reorder if necessary
+        if  self.isort is None:
+            self.reorder()
+
+        # get index
+        indexR = self.isort[0]
+        indexV = self.isort[1]
+
+        # cycle on resistances
+        for ir in indexR:
+            # get nores
+            N1, N2 = self.nodes[ir]
+
+            # detect connection
+            if (N1 == 0) or (N2 == 0): # if grounded...
+                # diagonal term
+                g.append(1.0 / self.values[ir])
+                g_row.append(max([N1, N2]) - 1)
+                g_col.append(max([N1, N2]) - 1)
+
+            else:                      # if not grounded...
+                # diagonal term
+                g.append(1.0 / self.values[ir])
+                g_row.append(N1 - 1)
+                g_col.append(N1 - 1)
+
+                # diagonal term
+                g.append(1.0 / self.values[ir])
+                g_row.append(N2 - 1)
+                g_col.append(N2 - 1)
+
+                # N1-N2 term
+                g.append(-1.0 / self.values[ir])
+                g_row.append(N1 - 1)
+                g_col.append(N2 - 1)
+
+                # N2-N1 term
+                g.append(-1.0 / self.values[ir])
+                g_row.append(N2 - 1)
+                g_col.append(N1 - 1)
+
+        # cycle on independent voltage sources
+        for k, iv in enumerate(indexV):
+            # get nodes
+            N1, N2 = self.nodes[iv]
 
             # detect connection
             if N1 == 0:               # if grounded to N1 ...
                 # negative terminal
                 g.append(-1)
                 g_row.append(N2 - 1)
-                g_col.append(Nn + k)
+                g_col.append(self.node_num + k)
 
                 # negative terminal
                 g.append(-1)
-                g_row.append(Nn + k)
+                g_row.append(self.node_num + k)
                 g_col.append(N2 - 1)
 
-                # update rhs
-                rhs.append(float(vs[3]))
-                rhs_row.append(Nn + k)
-                rhs_col.append(0)
-
-            elif N2 == 0:               # if grounded to N2 ...
+            elif N2 == 0:              # if grounded to N2 ...
                 # positive terminal
                 g.append(1)
                 g_row.append(N1 - 1)
-                g_col.append(Nn + k)
+                g_col.append(self.node_num + k)
 
                 # positive terminal
                 g.append(1)
-                g_row.append(Nn + k)
+                g_row.append(self.node_num + k)
                 g_col.append(N1 - 1)
-
-                # update rhs
-                rhs.append(float(vs[3]))
-                rhs_row.append(Nn + k)
-                rhs_col.append(0)
 
             else:                      # if not grounded ...
                 # positive terminal
                 g.append(1)
                 g_row.append(N1 - 1)
-                g_col.append(Nn + k)
+                g_col.append(self.node_num + k)
 
                 # positive terminal
                 g.append(1)
-                g_row.append(Nn + k)
+                g_row.append(self.node_num + k)
                 g_col.append(N1 - 1)
 
                 # negative terminal
                 g.append(-1)
                 g_row.append(N2 - 1)
-                g_col.append(Nn + k)
+                g_col.append(self.node_num + k)
 
                 # negative terminal
                 g.append(-1)
-                g_row.append(Nn + k)
+                g_row.append(self.node_num + k)
                 g_col.append(N2 - 1)
 
+
+        # # create conductance matrix
+        self.G = csr_matrix((g,(g_row,g_col)))
+
+
+    def rhs_matrix(self):
+        """
+        'rhs_matrix' creates the right hand side matrix
+
+        :return: rhs, right hand side
+        """
+        # reorder if necessary
+        if self.isort is None:
+            self.reorder()
+
+        # initialize rhs
+        rhs = [0] * (self.node_num + len(self.isort[1]))
+
+        # get index
+        indexV = self.isort[1]
+        indexI = self.isort[2]
+
+        # cycle on independent voltage sources
+        for k, iv in enumerate(indexV):
+            # update rhs
+            rhs[self.node_num + k] += self.values[iv]
+
+        # cycle on independent current sources
+        for ii in indexI:
+            # get nodes
+            N1, N2 = self.nodes[ii]
+
+            if N1 == 0:
                 # update rhs
-                rhs.append(float(vs[3]))
-                rhs_row.append(Nn + k)
-                rhs_col.append(0)
+                rhs[N2 - 1] += self.values[ii]
 
-        # create conductance matrix
-        A = csr_matrix((a, (a_row, a_col)))
+            elif N2 == 0:
+                # update rhs
+                rhs[N1 - 1] -= self.values[ii]
 
-        # create conductance matrix
-        G = csr_matrix((g,(g_row,g_col)))
+            else:
+                # update rhs
+                rhs[N1 - 1] -= self.values[ii]
+                rhs[N2 - 1] += self.values[ii]
 
-        # create conductance matrix
-        rhs = csr_matrix((rhs,(rhs_row,rhs_col)))
-
-        return A, G, rhs, Nn, names, values
-
-
-    def dc_solve(self):
-        """
-        "dc_solve" computes the DC operating point
-
-        :return:
-            * self.x
-        """
-        from scipy.sparse.linalg import spsolve
-        self.x = spsolve(self.G, self.rhs)
-
-
-    def branch_voltage(self):
-        """
-        "branch_voltage"  computes the branch voltages
-
-        :return:
-            * self.vb
-        """
-        # branch voltages
-        self.vb = self.A.transpose() * self.x[:self.node_num]
-
-
-    def branch_current(self, verbose='y'):
-        """
-        "branch_current"  computes the branch currents
-
-        :param verbose: set to 'y/n' to print results (default 'y')
-        :return:
-            * self.ib
-        """
-        # check if branch voltages are already computed
-        if not hasattr(self, 'vb'):
-            self.branch_voltage()
-
-        ib = []
-        cnt_v = 0
-        for name, val, voltage in zip(self.names, self.values, self.vb):
-            if name[0].upper() == 'R':
-                ib.append(voltage/val)
-            elif name[0].upper() == 'V':
-                ib.append(self.x[self.node_num + cnt_v])
-                cnt_v += 1
-            elif name[0].upper() == 'I':
-                ib.append(val)
-
-        self.ib = ib
+        self.rhs = rhs
 
 
     def reorder(self):
