@@ -59,7 +59,6 @@ class Network():
         self.vb = None
         self.ib = None
 
-
     def read_netlist(self, filename):
         """
         'readNetlist' reads a SPICE netlist
@@ -126,7 +125,6 @@ class Network():
         # return network structure
         return names, values, nodes, Nn
 
-
     def incidence_matrix(self):
         """
         'incidence_matrix' creates the branch-2-node incidence matrix
@@ -163,7 +161,6 @@ class Network():
 
         # create conductance matrix
         self.A = csr_matrix((a, (a_row, a_col)))
-
 
     def conductance_matrix(self):
         """
@@ -266,10 +263,8 @@ class Network():
                 g_row.append(self.node_num + k)
                 g_col.append(N2 - 1)
 
-
         # # create conductance matrix
         self.G = csr_matrix((g,(g_row,g_col)))
-
 
     def rhs_matrix(self):
         """
@@ -312,7 +307,6 @@ class Network():
                 rhs[N2 - 1] += self.values[ii]
 
         self.rhs = rhs
-
 
     def reorder(self):
         """
