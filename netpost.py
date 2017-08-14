@@ -11,7 +11,7 @@ def branch_voltage(net):
 
     # check if the solituon is available
     if net.x is None:
-        printf("No solution available")
+        print("No solution available")
         return None
 
     # branch voltages

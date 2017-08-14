@@ -175,12 +175,12 @@ class Network():
         g_col = []
 
         # reorder if necessary
-        if  self.isort is None:
+        if self.isort is None:
             self.reorder()
 
         # get index
         indexR = self.isort[0]
-        indexV = self.isort[1]
+        indexV = self.isort[3]
 
         # cycle on resistances
         for ir in indexR:
@@ -278,11 +278,11 @@ class Network():
             self.reorder()
 
         # initialize rhs
-        rhs = [0] * (self.node_num + len(self.isort[1]))
+        rhs = [0] * (self.node_num + len(self.isort[3]))
 
         # get index
-        indexV = self.isort[1]
-        indexI = self.isort[2]
+        indexV = self.isort[3]
+        indexI = self.isort[4]
 
         # cycle on independent voltage sources
         for k, iv in enumerate(indexV):
@@ -317,10 +317,16 @@ class Network():
             * self.isort
         """
         ires = []
+        iind = []
+        icap = []
         ivolt = []
         icur = []
         for k,ele in enumerate(self.names):
             if ele[0].upper() == 'R':
+                ires.append([int(ele[1]),k])
+            elif ele[0].upper() == 'L':
+                ires.append([int(ele[1]),k])
+            elif ele[0].upper() == 'C':
                 ires.append([int(ele[1]),k])
             elif ele[0].upper() == 'V':
                 ivolt.append([int(ele[1]),k])
@@ -329,5 +335,7 @@ class Network():
 
         self.isort = []
         self.isort.append([k for foo, k in sorted(ires)])
+        self.isort.append([k for foo, k in sorted(iind)])
+        self.isort.append([k for foo, k in sorted(icap)])
         self.isort.append([k for foo, k in sorted(ivolt)])
         self.isort.append([k for foo, k in sorted(icur)])
