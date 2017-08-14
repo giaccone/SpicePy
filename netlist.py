@@ -48,7 +48,8 @@ class Network():
         (self.names,
          self.values,
          self.nodes,
-         self.node_num) = self.read_netlist(filename)
+         self.node_num,
+         self.analysis) = self.read_netlist(filename)
 
         # initialization of other possible attributes
         self.A = None
@@ -85,19 +86,22 @@ class Network():
                 # split into a list
                 sline = line.split()
 
-                # get branch nodes
-                N1 = int(sline[1])
-                N2 = int(sline[2])
+                if sline[0][0] == '.':  # analysis identifier
+                    analysis = sline
+                else:
+                    # get branch nodes
+                    N1 = int(sline[1])
+                    N2 = int(sline[2])
 
                 # detect element type
-                if sline[0][0].upper() == 'R': # resistance
+                if sline[0][0].upper() == 'R':  # resistance
                     # add name and value
                     names.append(sline[0])
                     values.append(float(sline[3]))
                     nodes.append([N1, N2])
 
                     # update counter
-                    Nn  = max([N1, N2, Nn])
+                    Nn = max([N1, N2, Nn])
 
                 # independent current source
                 elif sline[0][0].upper() == 'I':
@@ -107,23 +111,20 @@ class Network():
                     nodes.append([N1, N2])
 
                     # update counter
-                    Nn  = max([N1, N2, Nn])
+                    Nn = max([N1, N2, Nn])
 
                 # independent voltage sources
-                elif sline[0][0].upper() == 'V': # independent voltage sources
+                elif sline[0][0].upper() == 'V':  # independent voltage sources
                     # add name and value
                     names.append(sline[0])
                     values.append(float(sline[3]))
                     nodes.append([N1, N2])
 
-                    # # create temporary list
-                    # Vsource.append(sline)
-
                     # update counter
-                    Nn  = max([N1, N2, Nn])
+                    Nn = max([N1, N2, Nn])
 
         # return network structure
-        return names, values, nodes, Nn
+        return names, values, nodes, Nn, analysis
 
     def incidence_matrix(self):
         """
