@@ -13,7 +13,12 @@
 # imported modules
 # ==================
 from scipy.sparse import csr_matrix
+import numpy as np
 
+# ==================
+# constants
+# ==================
+pi = np.pi
 
 # ==================
 # Class
@@ -88,7 +93,15 @@ class Network():
 
                 if sline[0][0] == '.':  # analysis identifier
                     analysis = sline
-                else:
+        f.close()
+
+        with open(filename) as f:
+            # cycle on lines
+            for b, line in enumerate(f):
+                # split into a list
+                sline = line.split()
+
+                if sline[0][0] != '.':  # analysis identifier
                     # get branch nodes
                     N1 = int(sline[1])
                     N2 = int(sline[2])
@@ -127,7 +140,10 @@ class Network():
                 elif sline[0][0].upper() == 'I':
                     # add name and value
                     names.append(sline[0])
-                    values.append(float(sline[3]))
+                    if (analysis[0] == '.ac') & (len(sline) == 5):
+                        values.append(float(sline[3]) * (np.cos(float(sline[4]) * pi / 180) + np.sin(float(sline[4]) * pi / 180) * 1j))
+                    else:
+                        values.append(float(sline[3]))
                     nodes.append([N1, N2])
 
                     # update counter
@@ -137,7 +153,10 @@ class Network():
                 elif sline[0][0].upper() == 'V':  # independent voltage sources
                     # add name and value
                     names.append(sline[0])
-                    values.append(float(sline[3]))
+                    if (analysis[0] == '.ac') & (len(sline) == 5):
+                        values.append(float(sline[3]) * (np.cos(float(sline[4]) * pi / 180) + np.sin(float(sline[4]) * pi / 180) * 1j))
+                    else:
+                        values.append(float(sline[3]))
                     nodes.append([N1, N2])
 
                     # update counter
@@ -187,7 +206,7 @@ class Network():
         """
         'conductance_matrix' creates the conductance matrix
 
-        :return: G, conductance matrix (including terms releted to independet voltage sources)
+        :return: G, conductance matrix (including terms related to independent voltage sources)
         """
         # initialize conductance terms
         g = []
