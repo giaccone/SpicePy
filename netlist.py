@@ -86,6 +86,7 @@ class Network():
                 # split into a list
                 sline = line.split()
 
+                print(sline)
                 if sline[0][0] == '.':  # analysis identifier
                     analysis = sline
                 else:
@@ -95,6 +96,26 @@ class Network():
 
                 # detect element type
                 if sline[0][0].upper() == 'R':  # resistance
+                    # add name and value
+                    names.append(sline[0])
+                    values.append(float(sline[3]))
+                    nodes.append([N1, N2])
+
+                    # update counter
+                    Nn = max([N1, N2, Nn])
+
+                # inductor
+                elif sline[0][0].upper() == 'L':
+                    # add name and value
+                    names.append(sline[0])
+                    values.append(float(sline[3]))
+                    nodes.append([N1, N2])
+
+                    # update counter
+                    Nn = max([N1, N2, Nn])
+
+                # capacitor
+                elif sline[0][0].upper() == 'C':
                     # add name and value
                     names.append(sline[0])
                     values.append(float(sline[3]))
@@ -180,6 +201,7 @@ class Network():
 
         # get index
         indexR = self.isort[0]
+        indexL = self.isort[1]
         indexV = self.isort[3]
 
         # cycle on resistances
@@ -215,13 +237,13 @@ class Network():
                 g_row.append(N2 - 1)
                 g_col.append(N1 - 1)
 
-        # cycle on independent voltage sources
-        for k, iv in enumerate(indexV):
+        # cycle on inductors
+        for k, il in enumerate(indexL):
             # get nodes
-            N1, N2 = self.nodes[iv]
+            N1, N2 = self.nodes[il]
 
             # detect connection
-            if N1 == 0:               # if grounded to N1 ...
+            if N1 == 0:  # if grounded to N1 ...
                 # negative terminal
                 g.append(-1)
                 g_row.append(N2 - 1)
@@ -232,7 +254,7 @@ class Network():
                 g_row.append(self.node_num + k)
                 g_col.append(N2 - 1)
 
-            elif N2 == 0:              # if grounded to N2 ...
+            elif N2 == 0:  # if grounded to N2 ...
                 # positive terminal
                 g.append(1)
                 g_row.append(N1 - 1)
@@ -243,7 +265,7 @@ class Network():
                 g_row.append(self.node_num + k)
                 g_col.append(N1 - 1)
 
-            else:                      # if not grounded ...
+            else:  # if not grounded ...
                 # positive terminal
                 g.append(1)
                 g_row.append(N1 - 1)
@@ -262,6 +284,55 @@ class Network():
                 # negative terminal
                 g.append(-1)
                 g_row.append(self.node_num + k)
+                g_col.append(N2 - 1)
+
+        # cycle on independent voltage sources
+        for k, iv in enumerate(indexV):
+            # get nodes
+            N1, N2 = self.nodes[iv]
+
+            # detect connection
+            if N1 == 0:               # if grounded to N1 ...
+                # negative terminal
+                g.append(-1)
+                g_row.append(N2 - 1)
+                g_col.append(self.node_num + len(indexL) + k)
+
+                # negative terminal
+                g.append(-1)
+                g_row.append(self.node_num + len(indexL) + k)
+                g_col.append(N2 - 1)
+
+            elif N2 == 0:              # if grounded to N2 ...
+                # positive terminal
+                g.append(1)
+                g_row.append(N1 - 1)
+                g_col.append(self.node_num + len(indexL) + k)
+
+                # positive terminal
+                g.append(1)
+                g_row.append(self.node_num + len(indexL) + k)
+                g_col.append(N1 - 1)
+
+            else:                      # if not grounded ...
+                # positive terminal
+                g.append(1)
+                g_row.append(N1 - 1)
+                g_col.append(self.node_num + len(indexL) + k)
+
+                # positive terminal
+                g.append(1)
+                g_row.append(self.node_num + len(indexL) + k)
+                g_col.append(N1 - 1)
+
+                # negative terminal
+                g.append(-1)
+                g_row.append(N2 - 1)
+                g_col.append(self.node_num + len(indexL) + k)
+
+                # negative terminal
+                g.append(-1)
+                g_row.append(self.node_num + len(indexL) + k)
                 g_col.append(N2 - 1)
 
         # # create conductance matrix
@@ -278,16 +349,17 @@ class Network():
             self.reorder()
 
         # initialize rhs
-        rhs = [0] * (self.node_num + len(self.isort[3]))
+        rhs = [0] * (self.node_num + len(self.isort[1]) + len(self.isort[3]))
 
         # get index
+        NL = len(self.isort[1])
         indexV = self.isort[3]
         indexI = self.isort[4]
 
         # cycle on independent voltage sources
         for k, iv in enumerate(indexV):
             # update rhs
-            rhs[self.node_num + k] += self.values[iv]
+            rhs[self.node_num + NL + k] += self.values[iv]
 
         # cycle on independent current sources
         for ii in indexI:
@@ -325,9 +397,9 @@ class Network():
             if ele[0].upper() == 'R':
                 ires.append([int(ele[1]),k])
             elif ele[0].upper() == 'L':
-                ires.append([int(ele[1]),k])
+                iind.append([int(ele[1]),k])
             elif ele[0].upper() == 'C':
-                ires.append([int(ele[1]),k])
+                icap.append([int(ele[1]),k])
             elif ele[0].upper() == 'V':
                 ivolt.append([int(ele[1]),k])
             elif ele[0].upper() == 'I':
