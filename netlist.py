@@ -86,7 +86,6 @@ class Network():
                 # split into a list
                 sline = line.split()
 
-                print(sline)
                 if sline[0][0] == '.':  # analysis identifier
                     analysis = sline
                 else:
