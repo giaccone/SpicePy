@@ -41,6 +41,11 @@ def branch_current(net):
         elif name[0].upper() == 'C':
             if net.analysis[0] == '.op':
                 net.ib.append(0.0)
+            elif net.analysis[0] == '.ac':
+                import numpy as np
+                f = float(net.analysis[-1])
+                Xc = -1.0 / (2 * np.pi * f * val)
+                net.ib.append(voltage / (Xc * 1j))
         elif name[0].upper() == 'V':
             net.ib.append(net.x[net.node_num + len(net.isort[1]) + cnt_v])
             cnt_v += 1
