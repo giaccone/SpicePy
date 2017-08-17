@@ -23,7 +23,7 @@ pi = np.pi
 # ==================
 # Class
 # ==================
-class Network():
+class Network:
     """
     Class that defines the network.
 
@@ -59,6 +59,7 @@ class Network():
         # initialization of other possible attributes
         self.A = None
         self.G = None
+        self.C = None
         self.rhs = None
         self.isort = None
         self.x = None
@@ -353,8 +354,70 @@ class Network():
                 g_row.append(self.node_num + len(indexL) + k)
                 g_col.append(N2 - 1)
 
-        # # create conductance matrix
+        # create conductance matrix
         self.G = csr_matrix((g,(g_row,g_col)))
+
+    def dynamic_matrix(self):
+        """
+        TO DO...
+
+        :return:
+        """
+
+        # initialize conductance terms
+        c = []
+        c_row = []
+        c_col = []
+
+        # reorder if necessary
+        if self.isort is None:
+            self.reorder()
+
+        # get index
+        indexL = self.isort[1]
+        indexC = self.isort[2]
+
+        # cycle on inductors
+        for k, il in enumerate(indexL):
+            c.append(-self.values[il])
+            c_row.append(self.node_num + k)
+            c_col.append(self.node_num + k)
+
+        # cycle on capacitors
+        for ic in indexC:
+            # get nores
+            N1, N2 = self.nodes[ic]
+
+            # detect connection
+            if (N1 == 0) or (N2 == 0):  # if grounded...
+                # diagonal term
+                c.append(self.values[ic])
+                c_row.append(max([N1, N2]) - 1)
+                c_col.append(max([N1, N2]) - 1)
+
+            else:  # if not grounded...
+                # diagonal term
+                c.append(self.values[ic])
+                c_row.append(N1 - 1)
+                c_col.append(N1 - 1)
+
+                # diagonal term
+                c.append(self.values[ic])
+                c_row.append(N2 - 1)
+                c_col.append(N2 - 1)
+
+                # N1-N2 term
+                c.append(-self.values[ic])
+                c_row.append(N1 - 1)
+                c_col.append(N2 - 1)
+
+                # N2-N1 term
+                c.append(-self.values[ic])
+                c_row.append(N2 - 1)
+                c_col.append(N1 - 1)
+
+        # create dynamic matrix
+        self.C = csr_matrix((c, (c_row, c_col)), shape=self.G.shape)
 
     def rhs_matrix(self):
         """
