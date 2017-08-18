@@ -462,6 +462,59 @@ class Network:
 
         self.rhs = rhs
 
+    def branch_voltage(self):
+        """
+        "branch_voltage"  computes the branch voltages
+
+        :return:
+            * self.vb
+        """
+        # check if the incidence matrix is available
+        if self.A is None:
+            self.incidence_matrix()
+
+        # check if the solution is available
+        if self.x is None:
+            print("No solution available")
+            return None
+
+        # branch voltages
+        self.vb = self.A.transpose() * self.x[:self.node_num]
+
+    def branch_current(self):
+        """
+        "branch_current"  computes the branch currents
+
+        :return:
+            * self.ib
+        """
+        # check is branch voltages are available
+        if self.vb is None:
+            branch_voltage(self)
+
+        self.ib = []
+        cnt_l = 0
+        cnt_v = 0
+        for name, val, voltage in zip(self.names, self.values, self.vb):
+            if name[0].upper() == 'R':
+                self.ib.append(voltage / val)
+            elif name[0].upper() == 'L':
+                self.ib.append(self.x[self.node_num + cnt_l])
+                cnt_l += 1
+            elif name[0].upper() == 'C':
+                if self.analysis[0] == '.op':
+                    self.ib.append(0.0)
+                elif self.analysis[0] == '.ac':
+                    import numpy as np
+                    f = float(self.analysis[-1])
+                    Xc = -1.0 / (2 * np.pi * f * val)
+                    self.ib.append(voltage / (Xc * 1j))
+            elif name[0].upper() == 'V':
+                self.ib.append(self.x[self.node_num + len(self.isort[1]) + cnt_v])
+                cnt_v += 1
+            elif name[0].upper() == 'I':
+                self.ib.append(val)
+
     def reorder(self):
         """
         'reorder' reorder the netlist
