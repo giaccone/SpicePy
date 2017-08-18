@@ -220,8 +220,8 @@ class Network:
 
         # get index
         indexR = self.isort[0]
-        indexL = self.isort[1]
-        indexV = self.isort[3]
+        indexL = sorted(self.isort[1])
+        indexV = sorted(self.isort[3])
 
         # cycle on resistances
         for ir in indexR:
@@ -374,7 +374,7 @@ class Network:
             self.reorder()
 
         # get index
-        indexL = self.isort[1]
+        indexL = sorted(self.isort[1])
         indexC = self.isort[2]
 
         # cycle on inductors
@@ -434,7 +434,7 @@ class Network:
 
         # get index
         NL = len(self.isort[1])
-        indexV = self.isort[3]
+        indexV = sorted(self.isort[3])
         indexI = self.isort[4]
 
         # cycle on independent voltage sources
