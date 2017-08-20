@@ -554,187 +554,174 @@ class Network:
         self.isort.append([k for foo, k in sorted(ivolt)])
         self.isort.append([k for foo, k in sorted(icur)])
 
-    def print(self, variable='both', polar=False):
+    def print(self, variable='both', polar=False, message=False):
 
         # if necessary reorder
         if self.isort is None:
             self.reorder()
 
         if variable.lower() == 'voltage':
-            print('==============================================')
-            print('             branch voltages')
-            print('==============================================')
+            msg = '==============================================\n'
+            msg += '             branch voltages\n'
+            msg += '==============================================\n'
 
             for k, index in enumerate(self.isort):
                 if polar:
                     if k == 0:  # resistors
                         for h in index:
-                            print('v({}) = {:10.4f} V < {:10.4f}°'.format(self.names[h], np.abs(self.vb[h]),
-                                                                          np.angle(self.vb[h], deg=True)))
-                            print('----------------------------------------------')
+                            msg += 'v({}) = {:10.4f} V < {:10.4f}°\n'.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
+                            msg += '----------------------------------------------\n'
                     elif k == 1:  # voltage sources
                         for h in index:
-                            print('v({}) = {:10.4f} V < {:10.4f}°'.format(self.names[h], np.abs(self.vb[h]),
-                                                                          np.angle(self.vb[h], deg=True)))
-                            print('----------------------------------------------')
+                            msg += 'v({}) = {:10.4f} V < {:10.4f}°\n'.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
+                            msg += '----------------------------------------------\n'
                     elif k == 2:  # voltage sources
                         for h in index:
-                            print('v({}) = {:10.4f} V < {:10.4f}°'.format(self.names[h], np.abs(self.vb[h]),
-                                                                          np.angle(self.vb[h], deg=True)))
-                            print('----------------------------------------------')
+                            msg += 'v({}) = {:10.4f} V < {:10.4f}°\n'.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
+                            msg += '----------------------------------------------\n'
                     elif k == 3:  # voltage sources
                         for h in index:
-                            print('v({}) = {:10.4f} V < {:10.4f}°'.format(self.names[h], np.abs(self.vb[h]),
-                                                                          np.angle(self.vb[h], deg=True)))
-                            print('----------------------------------------------')
+                            msg += 'v({}) = {:10.4f} V < {:10.4f}°\n'.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
+                            msg += '----------------------------------------------\n'
                     elif k == 4:  # current sources
                         for h in index:
-                            print('v({}) = {:10.4f} V < {:10.4f}°'.format(self.names[h], np.abs(self.vb[h]),
-                                                                          np.angle(self.vb[h], deg=True)))
-                            print('----------------------------------------------')
+                            msg += 'v({}) = {:10.4f} V < {:10.4f}°\n'.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
+                            msg += '----------------------------------------------'
                 else:
                     if k == 0:  # resistors
                         for h in index:
-                            print('v({}) = {:10.4f} V'.format(self.names[h], self.vb[h]))
-                            print('----------------------------------------------')
+                            msg += 'v({}) = {:10.4f} V\n'.format(self.names[h], self.vb[h])
+                            msg += '----------------------------------------------\n'
                     elif k == 1:  # voltage sources
                         for h in index:
-                            print('v({}) = {:10.4f} V'.format(self.names[h], self.vb[h]))
-                            print('----------------------------------------------')
+                            msg += 'v({}) = {:10.4f} V\n'.format(self.names[h], self.vb[h])
+                            msg += '----------------------------------------------\n'
                     elif k == 2:  # voltage sources
                         for h in index:
-                            print('v({}) = {:10.4f} V'.format(self.names[h], self.vb[h]))
-                            print('----------------------------------------------')
+                            msg += 'v({}) = {:10.4f} V\n'.format(self.names[h], self.vb[h])
+                            msg += '----------------------------------------------\n'
                     elif k == 3:  # voltage sources
                         for h in index:
-                            print('v({}) = {:10.4f} V'.format(self.names[h], self.vb[h]))
-                            print('----------------------------------------------')
+                            msg += 'v({}) = {:10.4f} V\n'.format(self.names[h], self.vb[h])
+                            msg += '----------------------------------------------\n'
                     elif k == 4:  # current sources
                         for h in index:
-                            print('v({}) = {:10.4f} V'.format(self.names[h], self.vb[h]))
-                            print('----------------------------------------------')
+                            msg += 'v({}) = {:10.4f} V\n'.format(self.names[h], self.vb[h])
+                            msg += '----------------------------------------------'
 
         elif variable.lower() == 'current':
-            print('==============================================')
-            print('             branch currents')
-            print('==============================================')
+            msg = '=============================================='
+            msg += '             branch currents'
+            msg += '=============================================='
 
             for k, index in enumerate(self.isort):
                 if polar:
                     if k == 0:  # resistors
                         for h in index:
-                            print('i({}) = {:10.4f} A < {:10.4f}°'.format(self.names[h], np.abs(self.ib[h]),
-                                                                          np.angle(self.ib[h], deg=True)))
-                            print('----------------------------------------------')
+                            msg += 'i({}) = {:10.4f} A < {:10.4f}°\n'.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
+                            msg += '----------------------------------------------\n'
                     elif k == 1:  # inductors
                         for h in index:
-                            print('i({}) = {:10.4f} A < {:10.4f}°'.format(self.names[h], np.abs(self.ib[h]),
-                                                                          np.angle(self.ib[h], deg=True)))
-                            print('----------------------------------------------')
+                            msg += 'i({}) = {:10.4f} A < {:10.4f}°\n'.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
+                            msg += '----------------------------------------------\n'
                     elif k == 2:  # capacitors
                         for h in index:
-                            print('i({}) = {:10.4f} A < {:10.4f}°'.format(self.names[h], np.abs(self.ib[h]),
-                                                                          np.angle(self.ib[h], deg=True)))
-                            print('----------------------------------------------')
+                            msg += 'i({}) = {:10.4f} A < {:10.4f}°\n'.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
+                            msg += '----------------------------------------------\n'
                     elif k == 3:  # voltage sources
                         for h in index:
-                            print('i({}) = {:10.4f} A < {:10.4f}°'.format(self.names[h], np.abs(self.ib[h]),
-                                                                          np.angle(self.ib[h], deg=True)))
-                            print('----------------------------------------------')
+                            msg += 'i({}) = {:10.4f} A < {:10.4f}°\n'.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
+                            msg += '----------------------------------------------\n'
                     elif k == 4:  # current sources
                         for h in index:
-                            print('i({}) = {:10.4f} A < {:10.4f}°'.format(self.names[h], np.abs(self.ib[h]),
-                                                                          np.angle(self.ib[h], deg=True)))
-                            print('----------------------------------------------')
+                            msg += 'i({}) = {:10.4f} A < {:10.4f}°\n'.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
+                            msg += '----------------------------------------------'
                 else:
                     if k == 0:  # resistors
                         for h in index:
-                            print('i({}) = {:10.4f} A'.format(self.names[h], self.ib[h]))
-                            print('----------------------------------------------')
+                            msg += 'i({}) = {:10.4f} A\n'.format(self.names[h], self.ib[h])
+                            msg += '----------------------------------------------\n'
                     elif k == 1:  # inductors
                         for h in index:
-                            print('i({}) = {:10.4f} A'.format(self.names[h], self.ib[h]))
-                            print('----------------------------------------------')
+                            msg += 'i({}) = {:10.4f} A\n'.format(self.names[h], self.ib[h])
+                            msg += '----------------------------------------------\n'
                     elif k == 2:  # capacitors
                         for h in index:
-                            print('i({}) = {:10.4f} A'.format(self.names[h], self.ib[h]))
-                            print('----------------------------------------------')
+                            msg += 'i({}) = {:10.4f} A\n'.format(self.names[h], self.ib[h])
+                            msg += '----------------------------------------------\n'
                     elif k == 3:  # voltage sources
                         for h in index:
-                            print('i({}) = {:10.4f} A'.format(self.names[h], self.ib[h]))
-                            print('----------------------------------------------')
+                            msg += 'i({}) = {:10.4f} A\n'.format(self.names[h], self.ib[h])
+                            msg += '----------------------------------------------\n'
                     elif k == 4:  # current sources
                         for h in index:
-                            print('i({}) = {:10.4f} A'.format(self.names[h], self.ib[h]))
-                            print('----------------------------------------------')
+                            msg += 'i({}) = {:10.4f} A\n'.format(self.names[h], self.ib[h])
+                            msg += '----------------------------------------------'
 
         elif variable.lower() == 'both':
-            print('==============================================')
-            print('               branch quantities              ')
-            print('==============================================')
+            msg = '==============================================\n'
+            msg += '               branch quantities\n'
+            msg += '==============================================\n'
 
             for k, index in enumerate(self.isort):
                 if polar:
                     if k == 0:  # resistors
                         for h in index:
-                            print('v({}) = {:10.4f} V < {:10.4f}°'.format(self.names[h], np.abs(self.vb[h]),
-                                                                          np.angle(self.vb[h], deg=True)))
-                            print('i({}) = {:10.4f} A < {:10.4f}°'.format(self.names[h], np.abs(self.ib[h]),
-                                                                          np.angle(self.ib[h], deg=True)))
-                            print('----------------------------------------------')
+                            msg += 'v({}) = {:10.4f} V < {:10.4f}°\n'.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
+                            msg += 'i({}) = {:10.4f} A < {:10.4f}°\n'.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
+                            msg += '----------------------------------------------\n'
                     elif k == 1:  # inductors
                         for h in index:
-                            print('v({}) = {:10.4f} V < {:10.4f}°'.format(self.names[h], np.abs(self.vb[h]),
-                                                                          np.angle(self.vb[h], deg=True)))
-                            print('i({}) = {:10.4f} A < {:10.4f}°'.format(self.names[h], np.abs(self.ib[h]),
-                                                                          np.angle(self.ib[h], deg=True)))
-                            print('----------------------------------------------')
+                            msg += 'v({}) = {:10.4f} V < {:10.4f}°\n'.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
+                            msg += 'i({}) = {:10.4f} A < {:10.4f}°\n'.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
+                            msg += '----------------------------------------------\n'
                     elif k == 2:  # capacitors
                         for h in index:
-                            print('v({}) = {:10.4f} V < {:10.4f}°'.format(self.names[h], np.abs(self.vb[h]),
-                                                                          np.angle(self.vb[h], deg=True)))
-                            print('i({}) = {:10.4f} A < {:10.4f}°'.format(self.names[h], np.abs(self.ib[h]),
-                                                                          np.angle(self.ib[h], deg=True)))
-                            print('----------------------------------------------')
+                            msg += 'v({}) = {:10.4f} V < {:10.4f}°\n'.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
+                            msg += 'i({}) = {:10.4f} A < {:10.4f}°\n'.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
+                            msg += '----------------------------------------------\n'
                     elif k == 3:  # voltage sources
                         for h in index:
-                            print('v({}) = {:10.4f} V < {:10.4f}°'.format(self.names[h], np.abs(self.vb[h]),
-                                                                          np.angle(self.vb[h], deg=True)))
-                            print('i({}) = {:10.4f} A < {:10.4f}°'.format(self.names[h], np.abs(self.ib[h]),
-                                                                          np.angle(self.ib[h], deg=True)))
-                            print('----------------------------------------------')
+                            msg += 'v({}) = {:10.4f} V < {:10.4f}°\n'.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
+                            msg += 'i({}) = {:10.4f} A < {:10.4f}°\n'.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
+                            msg += '----------------------------------------------\n'
                     elif k == 4:  # current sources
                         for h in index:
-                            print('v({}) = {:10.4f} V < {:10.4f}°'.format(self.names[h], np.abs(self.vb[h]),
-                                                                          np.angle(self.vb[h], deg=True)))
-                            print('i({}) = {:10.4f} A < {:10.4f}°'.format(self.names[h], np.abs(self.ib[h]),
-                                                                          np.angle(self.ib[h], deg=True)))
-                            print('----------------------------------------------')
+                            msg += 'v({}) = {:10.4f} V < {:10.4f}°\n'.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
+                            msg += 'i({}) = {:10.4f} A < {:10.4f}°\n'.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
+                            msg += '----------------------------------------------'
 
                 else:
                     if k == 0:  # resistors
                         for h in index:
-                            print('v({}) = {:10.4f} V'.format(self.names[h], self.vb[h]))
-                            print('i({}) = {:10.4f} A'.format(self.names[h], self.ib[h]))
-                            print('----------------------------------------------')
+                            msg += 'v({}) = {:10.4f} V\n'.format(self.names[h], self.vb[h])
+                            msg += 'i({}) = {:10.4f} A\n'.format(self.names[h], self.ib[h])
+                            msg += '----------------------------------------------\n'
                     elif k == 1:  # inductors
                         for h in index:
-                            print('v({}) = {:10.4f} V'.format(self.names[h], self.vb[h]))
-                            print('i({}) = {:10.4f} A'.format(self.names[h], self.ib[h]))
-                            print('----------------------------------------------')
+                            msg += 'v({}) = {:10.4f} V\n'.format(self.names[h], self.vb[h])
+                            msg += 'i({}) = {:10.4f} A\n'.format(self.names[h], self.ib[h])
+                            msg += '----------------------------------------------\n'
                     elif k == 2:  # capacitors
                         for h in index:
-                            print('v({}) = {:10.4f} V'.format(self.names[h], self.vb[h]))
-                            print('i({}) = {:10.4f} A'.format(self.names[h], self.ib[h]))
-                            print('----------------------------------------------')
+                            msg += 'v({}) = {:10.4f} V\n'.format(self.names[h], self.vb[h])
+                            msg += 'i({}) = {:10.4f} A\n'.format(self.names[h], self.ib[h])
+                            msg += '----------------------------------------------\n'
                     elif k == 3:  # voltage sources
                         for h in index:
-                            print('v({}) = {:10.4f} V'.format(self.names[h], self.vb[h]))
-                            print('i({}) = {:10.4f} A'.format(self.names[h], self.ib[h]))
-                            print('----------------------------------------------')
+                            msg += 'v({}) = {:10.4f} V\n'.format(self.names[h], self.vb[h])
+                            msg += 'i({}) = {:10.4f} A\n'.format(self.names[h], self.ib[h])
+                            msg += '----------------------------------------------\n'
                     elif k == 4:  # current sources
                         for h in index:
-                            print('v({}) = {:10.4f} V'.format(self.names[h], self.vb[h]))
-                            print('i({}) = {:10.4f} A'.format(self.names[h], self.ib[h]))
-                            print('----------------------------------------------')
+                            msg += 'v({}) = {:10.4f} V\n'.format(self.names[h], self.vb[h])
+                            msg += 'i({}) = {:10.4f} A\n'.format(self.names[h], self.ib[h])
+                            msg += '----------------------------------------------'
+
+        if message:
+            return msg
+        else:
+            print(msg)
+            return None
+
 
