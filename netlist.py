@@ -35,6 +35,7 @@ class Network:
     Other attributes (default is None):
         * self.A:
         * self.G:
+        * self.C:
         * self.rhs:
         * self.isort:
         * self.x:
@@ -47,9 +48,12 @@ class Network:
 
     def __init__(self, filename):
         """
-        TO DO...
+        __init__ initializes common attributes using read_netlist method
+
+        :param filename:
         """
-        # basilar attributes
+
+        # common attributes
         (self.names,
          self.values,
          self.nodes,
@@ -71,10 +75,12 @@ class Network:
         'readNetlist' reads a SPICE netlist
 
         :param filename: file name with the netlist
-        :return: tuple including:
-            * A incidence matrix, node-2-branch (in sparse form)
-            * G conductance matrix (in sparse form)
-            * rhs right end side (in sparse form)
+        :return:
+            * names: element names
+            * values: element values
+            * nodes: element nodes
+            * Nn: number of nodes in the netlist
+            * analysis: type of analysis
         """
 
         # initialize counter for number of nodes
@@ -85,7 +91,7 @@ class Network:
         values = []
         nodes = []
 
-        # read netlist
+        # get the analysis type
         with open(filename) as f:
             # cycle on lines
             for b, line in enumerate(f):
@@ -96,6 +102,7 @@ class Network:
                     analysis = sline
         f.close()
 
+        # read the netlist (according to analysis type)
         with open(filename) as f:
             # cycle on lines
             for b, line in enumerate(f):
@@ -207,7 +214,7 @@ class Network:
         """
         'conductance_matrix' creates the conductance matrix
 
-        :return: G, conductance matrix (including terms related to independent voltage sources)
+        :return: G, conductance matrix (including constant terms related to inductors and independent voltage sources)
         """
         # initialize conductance terms
         g = []
@@ -359,9 +366,9 @@ class Network:
 
     def dynamic_matrix(self):
         """
-        TO DO...
+        'dynamic_matrix' creates the dynamic matrix
 
-        :return:
+        :return: C, dynamic matrix (inductors and capacitors)
         """
 
         # initialize conductance terms
@@ -517,10 +524,11 @@ class Network:
 
     def reorder(self):
         """
-        'reorder' reorder the netlist
+        'reorder' reorder the netlist. Order: R, L, C, V and I
+        Elements of the same type are ordered in ascending order (eg. R1, R2, R3,...)
 
         :return:
-            * self.isort
+            * self.isort (index for reordering the network)
         """
         ires = []
         iind = []
