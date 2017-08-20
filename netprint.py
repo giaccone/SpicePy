@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def print_branch_voltage(net, polar=False):
     """
     'print_branch_voltage' print the branch voltages on terminal
@@ -186,4 +187,3 @@ def print_branch_quantity(net, polar=False):
                     print('v({}) = {:10.4f} V'.format(net.names[h], net.vb[h]))
                     print('i({}) = {:10.4f} A'.format(net.names[h], net.ib[h]))
                     print('----------------------------------------------')
-
