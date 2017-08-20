@@ -497,7 +497,7 @@ class Network:
         """
         # check is branch voltages are available
         if self.vb is None:
-            branch_voltage(self)
+            self.branch_voltage(self)
 
         self.ib = []
         cnt_l = 0
