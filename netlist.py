@@ -467,7 +467,7 @@ class Network:
                 rhs[N1 - 1] -= self.values[ii]
                 rhs[N2 - 1] += self.values[ii]
 
-        self.rhs = rhs
+        self.rhs = np.array(rhs)
 
     def branch_voltage(self):
         """
@@ -499,28 +499,30 @@ class Network:
         if self.vb is None:
             self.branch_voltage(self)
 
-        self.ib = []
+        ibranch = []
         cnt_l = 0
         cnt_v = 0
         for name, val, voltage in zip(self.names, self.values, self.vb):
             if name[0].upper() == 'R':
-                self.ib.append(voltage / val)
+                ibranch.append(voltage / val)
             elif name[0].upper() == 'L':
-                self.ib.append(self.x[self.node_num + cnt_l])
+                ibranch.append(self.x[self.node_num + cnt_l])
                 cnt_l += 1
             elif name[0].upper() == 'C':
                 if self.analysis[0] == '.op':
-                    self.ib.append(0.0)
+                    ibranch.append(0.0)
                 elif self.analysis[0] == '.ac':
                     import numpy as np
                     f = float(self.analysis[-1])
                     Xc = -1.0 / (2 * np.pi * f * val)
-                    self.ib.append(voltage / (Xc * 1j))
+                    ibranch.append(voltage / (Xc * 1j))
             elif name[0].upper() == 'V':
-                self.ib.append(self.x[self.node_num + len(self.isort[1]) + cnt_v])
+                ibranch.append(self.x[self.node_num + len(self.isort[1]) + cnt_v])
                 cnt_v += 1
             elif name[0].upper() == 'I':
-                self.ib.append(val)
+                ibranch.append(val)
+
+        self.ib = np.array(ibranch)
 
     def reorder(self):
         """
