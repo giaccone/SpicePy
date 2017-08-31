@@ -30,6 +30,7 @@ class Network:
     Basilar attributes (always assigned):
         * self.names: component names
         * self.values: component values
+        * self.IC: initian conditions for dynamic components (stored as dict)
         * self.nodes: component nodes (only two-port right now)
         * self.node_num: number of nodes in the network
     Other attributes (default is None):
@@ -57,6 +58,7 @@ class Network:
         # common attributes
         (self.names,
          self.values,
+         self.IC,
          self.nodes,
          self.node_num,
          self.analysis) = self.read_netlist(filename)
@@ -92,6 +94,7 @@ class Network:
         names = []
         values = []
         nodes = []
+        IC = {}
 
         # get the analysis type
         with open(filename) as f:
@@ -132,6 +135,14 @@ class Network:
                     names.append(sline[0])
                     values.append(float(sline[3]))
                     nodes.append([N1, N2])
+                    if len(sline) == 5:
+                        if sline[4].lower().find('ic') != -1:
+                            IC[sline[0]] = float(sline[4].split('=')[1])
+                        else:
+                            IC[sline[0]] = 'Please check this --> ' + sline[-1]
+                            print("Warning: wrong definition of IC for {} --> ".format(sline[0]) + IC[sline[0]])
+                    else:
+                        IC[sline[0]] = None
 
                     # update counter
                     Nn = max([N1, N2, Nn])
@@ -142,6 +153,13 @@ class Network:
                     names.append(sline[0])
                     values.append(float(sline[3]))
                     nodes.append([N1, N2])
+                    if len(sline) == 5:
+                        if sline[4].lower().find('ic') != -1:
+                            IC[sline[0]] = float(sline[4].split('=')[1])
+                        else:
+                            print("Warning: wrong definition of IC for {}\n".format(sline[0]))
+                    else:
+                        IC[sline[0]] = None
 
                     # update counter
                     Nn = max([N1, N2, Nn])
@@ -173,7 +191,7 @@ class Network:
                     Nn = max([N1, N2, Nn])
 
         # return network structure
-        return names, values, nodes, Nn, analysis
+        return names, values, IC, nodes, Nn, analysis
 
     def incidence_matrix(self):
         """
