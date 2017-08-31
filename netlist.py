@@ -135,14 +135,16 @@ class Network:
                     names.append(sline[0])
                     values.append(float(sline[3]))
                     nodes.append([N1, N2])
-                    if len(sline) == 5:
-                        if sline[4].lower().find('ic') != -1:
-                            IC[sline[0]] = float(sline[4].split('=')[1])
+
+                    if analysis[0] == '.tran':
+                        if len(sline) == 5:
+                            if sline[4].lower().find('ic') != -1:
+                                IC[sline[0]] = float(sline[4].split('=')[1])
+                            else:
+                                IC[sline[0]] = 'Please check this --> ' + sline[-1]
+                                print("Warning: wrong definition of IC for {} --> ".format(sline[0]) + IC[sline[0]])
                         else:
-                            IC[sline[0]] = 'Please check this --> ' + sline[-1]
-                            print("Warning: wrong definition of IC for {} --> ".format(sline[0]) + IC[sline[0]])
-                    else:
-                        IC[sline[0]] = None
+                            IC[sline[0]] = 0
 
                     # update counter
                     Nn = max([N1, N2, Nn])
@@ -153,13 +155,16 @@ class Network:
                     names.append(sline[0])
                     values.append(float(sline[3]))
                     nodes.append([N1, N2])
-                    if len(sline) == 5:
-                        if sline[4].lower().find('ic') != -1:
-                            IC[sline[0]] = float(sline[4].split('=')[1])
+
+                    if analysis[0] == '.tran':
+                        if len(sline) == 5:
+                            if sline[4].lower().find('ic') != -1:
+                                IC[sline[0]] = float(sline[4].split('=')[1])
+                            else:
+                                IC[sline[0]] = 'Please check this --> ' + sline[-1]
+                                print("Warning: wrong definition of IC for {} --> ".format(sline[0]) + IC[sline[0]])
                         else:
-                            print("Warning: wrong definition of IC for {}\n".format(sline[0]))
-                    else:
-                        IC[sline[0]] = None
+                            IC[sline[0]] = 0
 
                     # update counter
                     Nn = max([N1, N2, Nn])
