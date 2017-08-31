@@ -38,6 +38,7 @@ class Network:
         * self.C:
         * self.rhs:
         * self.isort:
+        * self.t:
         * self.x:
         * self.vb:
         * self.ib:
@@ -66,6 +67,7 @@ class Network:
         self.C = None
         self.rhs = None
         self.isort = None
+        self.t = None
         self.x = None
         self.vb = None
         self.ib = None
