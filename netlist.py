@@ -532,7 +532,6 @@ class Network:
                 if self.analysis[0] == '.op':
                     ibranch.append(0.0)
                 elif self.analysis[0] == '.ac':
-                    import numpy as np
                     f = float(self.analysis[-1])
                     Xc = -1.0 / (2 * np.pi * f * val)
                     ibranch.append(voltage / (Xc * 1j))
