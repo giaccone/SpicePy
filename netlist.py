@@ -33,6 +33,8 @@ class Network:
         * self.IC: initian conditions for dynamic components (stored as dict)
         * self.nodes: component nodes (only two-port right now)
         * self.node_num: number of nodes in the network
+        * self.analysis: type of analysis
+        * self.plot_cmd: plot directive for transient analysis
     Other attributes (default is None):
         * self.A:
         * self.G:
@@ -61,7 +63,8 @@ class Network:
          self.IC,
          self.nodes,
          self.node_num,
-         self.analysis) = self.read_netlist(filename)
+         self.analysis,
+         self.plot_cmd) = self.read_netlist(filename)
 
         # initialization of other possible attributes
         self.A = None
@@ -95,16 +98,21 @@ class Network:
         values = []
         nodes = []
         IC = {}
+        plot_cmd = None
+        analysis = None
 
         # get the analysis type
         with open(filename) as f:
             # cycle on lines
             for b, line in enumerate(f):
-                # split into a list
-                sline = line.split()
 
-                if sline[0][0] == '.':  # analysis identifier
-                    analysis = sline
+                if line[0][0] == '.':  # analysis/command identifier
+                    if (line.lower().find('.plot') != -1):
+                        plot_cmd = line[:-1]
+                    else:
+                        # split into a list
+                        sline = line.split()
+                        analysis = sline
         f.close()
 
         # read the netlist (according to analysis type)
@@ -196,7 +204,7 @@ class Network:
                     Nn = max([N1, N2, Nn])
 
         # return network structure
-        return names, values, IC, nodes, Nn, analysis
+        return names, values, IC, nodes, Nn, analysis, plot_cmd
 
     def incidence_matrix(self):
         """
@@ -749,5 +757,134 @@ class Network:
         else:
             print(msg)
             return None
+
+    def plot(self, to_file=False, filename=None, dpi_value=150):
+
+        # check if the analysis is '.tran'
+        if self.analysis[0] != '.tran':
+            print("plot not supported of analysis: '{}".format(self.analysis[0]))
+            return -1
+        else:
+            # import required library
+            import matplotlib.pyplot as plt
+
+            # ===============
+            # analyze command
+            # ===============
+            # set all to uppercase
+            plot_cmd = self.plot_cmd.upper()
+
+            # check at least one voltage/current has to be plotted
+            plotV = plot_cmd.find('V(')
+            plotI = plot_cmd.find('I(')
+            if (plotV == -1) and (plotI == -1):
+                print("no variables has been provided in this command: {}".format(plot_cmd))
+                return -1
+            elif (plotV != -1) and (plotI == -1):
+                makesubplot = False
+                Ylbl = 'voltage (V)'
+            elif (plotV == -1) and (plotI != -1):
+                makesubplot = False
+                Ylbl = 'current (A)'
+            elif (plotV != -1) and (plotI != -1):
+                makesubplot = True
+
+            # get variables to be plotted
+            plot_list = plot_cmd.split()[1:]
+            legend_enties = plot_cmd.split()[1:]
+
+            # initialize figure
+            if makesubplot:
+                hf, axs = plt.subplots(2, 1)
+            else:
+                hf = plt.figure()
+
+            # cycle on variables
+            for k, variable in enumerate(plot_list):
+                if variable[0] == 'V':
+                    remove_char = ('V','(',')')
+                    #lbl = variable
+                    for char in remove_char:
+                        variable = variable.replace(char, '')
+
+                    id = self.names.index(variable)
+                    nodes = [n - 1 for n in self.nodes[id] if n != 0]
+                    if len(nodes) == 2:
+                        v = self.x[:,nodes[0]] - self.x[:,nodes[1]]
+                    else:
+                        v = self.x[:, nodes[0]]
+                    if makesubplot:
+                        plt.axes(axs[0])
+                    plt.plot(self.t, v, label=legend_enties[k])
+
+                elif variable[0] == 'I':
+                    remove_char = ('I', '(', ')')
+                    # lbl = variable
+                    for char in remove_char:
+                        variable = variable.replace(char, '')
+
+                    if (variable[0] == 'R') or (variable[0] == 'C'):
+                        id = self.names.index(variable)
+                        nodes = [n - 1 for n in self.nodes[id] if n != 0]
+                        if len(nodes) == 2:
+                            v = self.x[:, nodes[0]] - self.x[:, nodes[1]]
+                        else:
+                            v = self.x[:, nodes[0]]
+
+                        if (variable[0] == 'R'):
+                            i = v / self.values[id]
+                        elif (variable[0] == 'C'):
+                            i = self.values[id] * np.gradient(v, self.t)
+
+                    elif (variable[0] == 'L'):
+                        indexL = sorted(self.isort[1])
+                        for h, il in enumerate(indexL):
+                            if variable == self.names[il]:
+                                n = self.node_num + h
+
+                        i = self.x[:, n]
+
+                    elif (variable[0] == 'L'):
+                        indexV = sorted(self.isort[3])
+                        for h, iv in enumerate(indexV):
+                            if variable == self.names[iv]:
+                                n = self.node_num + len(self.isort[1]) + h
+
+                        i = self.x[:, n]
+
+                    if makesubplot:
+                        plt.axes(axs[1])
+                    plt.plot(self.t, i, label=legend_enties[k])
+
+
+
+            if makesubplot:
+                plt.axes(axs[0])
+                plt.ylabel('voltage (V)', fontsize=16)
+                plt.grid()
+                plt.legend()
+                plt.tight_layout()
+
+                plt.axes(axs[1])
+                plt.xlabel('time (s)', fontsize=16)
+                plt.ylabel('current (A)', fontsize=16)
+                plt.grid()
+                plt.legend()
+                plt.tight_layout()
+            else:
+                plt.xlabel('time (s)', fontsize=16)
+                plt.ylabel(Ylbl, fontsize=16)
+                plt.grid()
+                plt.legend()
+                plt.tight_layout()
+
+            if to_file:
+                if filename is None:
+                    filename='transient_plot.png'
+
+                hf.savefig(filename, dpi=dpi_value)
+
+
+
 
 
