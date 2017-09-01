@@ -884,6 +884,8 @@ class Network:
 
                 hf.savefig(filename, dpi=dpi_value)
 
+        return hf
+
 
 
 
