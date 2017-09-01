@@ -6,12 +6,18 @@
 * to allow them to check the results of exercises solved analytically
 * to show them how a numerical code to solve circuit is made
 
-# Feature
+This document provides information about features and installation procedure. For the user's guide please refer to the [Wiki section](https://github.com/giaccone/SpicePy/wiki).
+
+# Feature (and changelog)
+## September 1, 2017
+
+* solution of dynamic networks (tested first and second order circuits)
+
 ## August 29, 2017
 
 * solution of DC network
 * computation of the operating point (including dynamic components)
-* solution of AC network (single frequency)
+* solution of AC network (only single frequency right now)
 
 # Installation
 
@@ -27,7 +33,8 @@ At the time of writing (August 29, 2017), the project is based on:
 * `Python 3.6.2`
 * `numpy 1.13.1`
 * `scipy 0.19.1`
+* `matplotlib 2.0.2`
 
-SpicePy should work also with earlier version of Python (not Python 2), numpy and scipy.
+SpicePy should work also with earlier version of Python (not Python 2), numpy, scipy and matplotlib.
 
 
