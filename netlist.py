@@ -803,7 +803,7 @@ class Network:
             for k, variable in enumerate(plot_list):
                 if variable[0] == 'V':
                     remove_char = ('V','(',')')
-                    #lbl = variable
+
                     for char in remove_char:
                         variable = variable.replace(char, '')
 
@@ -819,7 +819,7 @@ class Network:
 
                 elif variable[0] == 'I':
                     remove_char = ('I', '(', ')')
-                    
+
                     for char in remove_char:
                         variable = variable.replace(char, '')
 
