@@ -819,7 +819,7 @@ class Network:
 
                 elif variable[0] == 'I':
                     remove_char = ('I', '(', ')')
-                    # lbl = variable
+                    
                     for char in remove_char:
                         variable = variable.replace(char, '')
 
@@ -834,7 +834,10 @@ class Network:
                         if (variable[0] == 'R'):
                             i = v / self.values[id]
                         elif (variable[0] == 'C'):
-                            i = self.values[id] * np.gradient(v, self.t)
+                            from scipy.interpolate import CubicSpline
+                            cs = CubicSpline(self.t, v)
+                            csd = cs.derivative()
+                            i = self.values[id] * csd(self.t)
 
                     elif (variable[0] == 'L'):
                         indexL = sorted(self.isort[1])
@@ -844,7 +847,7 @@ class Network:
 
                         i = self.x[:, n]
 
-                    elif (variable[0] == 'L'):
+                    elif (variable[0] == 'V'):
                         indexV = sorted(self.isort[3])
                         for h, iv in enumerate(indexV):
                             if variable == self.names[iv]:
