@@ -30,7 +30,7 @@ class Network:
     Basilar attributes (always assigned):
         * self.names: component names
         * self.values: component values
-        * self.IC: initian conditions for dynamic components (stored as dict)
+        * self.IC: initial conditions for dynamic components (stored as dict)
         * self.nodes: component nodes (only two-port right now)
         * self.node_num: number of nodes in the network
         * self.analysis: type of analysis
@@ -45,6 +45,7 @@ class Network:
         * self.x:
         * self.vb:
         * self.ib:
+        * self.pb:
     Methods:
         * read_netlist(self): reads a SPICE netlist (used by '__init__')
         * incidence_matrix(self):
@@ -76,6 +77,7 @@ class Network:
         self.x = None
         self.vb = None
         self.ib = None
+        self.pb = None
 
     def read_netlist(self, filename):
         """
@@ -530,7 +532,7 @@ class Network:
         """
         # check is branch voltages are available
         if self.vb is None:
-            self.branch_voltage(self)
+            self.branch_voltage()
 
         ibranch = []
         cnt_l = 0
@@ -555,6 +557,31 @@ class Network:
                 ibranch.append(val)
 
         self.ib = np.array(ibranch)
+
+    def branch_power(self):
+        """
+        "branch_power"  computes the branch power
+        (passive sign convention)
+
+        :return:
+            * self.pb: real power for '.op' and complex power for '.ac'
+        """
+
+        if self.analysis[0] != '.tran':
+            # check is branch voltages are available
+            if self.vb is None:
+                self.branch_voltage()
+
+            # check is branch current are available
+            if self.ib is None:
+                self.branch_current()
+
+            if self.analysis[0] == '.op':
+                self.pb = self.vb * self.ib
+            elif self.analysis[0] == '.ac':
+                self.pb = self.vb * np.conj(self.ib)
+        else:
+            print("Function not supported for transient")
 
     def reorder(self):
         """
@@ -588,8 +615,16 @@ class Network:
         self.isort.append([k for foo, k in sorted(ivolt)])
         self.isort.append([k for foo, k in sorted(icur)])
 
-    def print(self, variable='both', polar=False, message=False):
+    def print(self, variable='all', polar=False, message=False):
 
+        # common formatter
+        voltage_fmt = 'v({}) = {:10.4f} V\n'
+        voltage_fmt_polar = 'v({}) = {:10.4f} V < {:10.4f}°\n'
+        current_fmt = 'i({}) = {:10.4f} A\n'
+        current_fmt_polar = 'i({}) = {:10.4f} A < {:10.4f}°\n'
+        power_fmt = 'p({}) = {:10.4f} {}\n'
+        power_fmt_polar = 'p({}) = {:10.4f} {} < {:10.4f}°\n'
+        
         # if necessary reorder
         if self.isort is None:
             self.reorder()
@@ -603,44 +638,44 @@ class Network:
                 if polar:
                     if k == 0:  # resistors
                         for h in index:
-                            msg += 'v({}) = {:10.4f} V < {:10.4f}°\n'.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
+                            msg += voltage_fmt_polar.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
                             msg += '----------------------------------------------\n'
                     elif k == 1:  # voltage sources
                         for h in index:
-                            msg += 'v({}) = {:10.4f} V < {:10.4f}°\n'.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
+                            msg += voltage_fmt_polar.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
                             msg += '----------------------------------------------\n'
                     elif k == 2:  # voltage sources
                         for h in index:
-                            msg += 'v({}) = {:10.4f} V < {:10.4f}°\n'.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
+                            msg += voltage_fmt_polar.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
                             msg += '----------------------------------------------\n'
                     elif k == 3:  # voltage sources
                         for h in index:
-                            msg += 'v({}) = {:10.4f} V < {:10.4f}°\n'.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
+                            msg += voltage_fmt_polar.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
                             msg += '----------------------------------------------\n'
                     elif k == 4:  # current sources
                         for h in index:
-                            msg += 'v({}) = {:10.4f} V < {:10.4f}°\n'.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
+                            msg += voltage_fmt_polar.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
                             msg += '----------------------------------------------'
                 else:
                     if k == 0:  # resistors
                         for h in index:
-                            msg += 'v({}) = {:10.4f} V\n'.format(self.names[h], self.vb[h])
+                            msg += voltage_fmt.format(self.names[h], self.vb[h])
                             msg += '----------------------------------------------\n'
                     elif k == 1:  # voltage sources
                         for h in index:
-                            msg += 'v({}) = {:10.4f} V\n'.format(self.names[h], self.vb[h])
+                            msg += voltage_fmt.format(self.names[h], self.vb[h])
                             msg += '----------------------------------------------\n'
                     elif k == 2:  # voltage sources
                         for h in index:
-                            msg += 'v({}) = {:10.4f} V\n'.format(self.names[h], self.vb[h])
+                            msg += voltage_fmt.format(self.names[h], self.vb[h])
                             msg += '----------------------------------------------\n'
                     elif k == 3:  # voltage sources
                         for h in index:
-                            msg += 'v({}) = {:10.4f} V\n'.format(self.names[h], self.vb[h])
+                            msg += voltage_fmt.format(self.names[h], self.vb[h])
                             msg += '----------------------------------------------\n'
                     elif k == 4:  # current sources
                         for h in index:
-                            msg += 'v({}) = {:10.4f} V\n'.format(self.names[h], self.vb[h])
+                            msg += voltage_fmt.format(self.names[h], self.vb[h])
                             msg += '----------------------------------------------'
 
         elif variable.lower() == 'current':
@@ -652,47 +687,130 @@ class Network:
                 if polar:
                     if k == 0:  # resistors
                         for h in index:
-                            msg += 'i({}) = {:10.4f} A < {:10.4f}°\n'.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
+                            msg += current_fmt_polar.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
                             msg += '----------------------------------------------\n'
                     elif k == 1:  # inductors
                         for h in index:
-                            msg += 'i({}) = {:10.4f} A < {:10.4f}°\n'.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
+                            msg += current_fmt_polar.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
                             msg += '----------------------------------------------\n'
                     elif k == 2:  # capacitors
                         for h in index:
-                            msg += 'i({}) = {:10.4f} A < {:10.4f}°\n'.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
+                            msg += current_fmt_polar.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
                             msg += '----------------------------------------------\n'
                     elif k == 3:  # voltage sources
                         for h in index:
-                            msg += 'i({}) = {:10.4f} A < {:10.4f}°\n'.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
+                            msg += current_fmt_polar.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
                             msg += '----------------------------------------------\n'
                     elif k == 4:  # current sources
                         for h in index:
-                            msg += 'i({}) = {:10.4f} A < {:10.4f}°\n'.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
+                            msg += current_fmt_polar.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
                             msg += '----------------------------------------------'
                 else:
                     if k == 0:  # resistors
                         for h in index:
-                            msg += 'i({}) = {:10.4f} A\n'.format(self.names[h], self.ib[h])
+                            msg += current_fmt.format(self.names[h], self.ib[h])
                             msg += '----------------------------------------------\n'
                     elif k == 1:  # inductors
                         for h in index:
-                            msg += 'i({}) = {:10.4f} A\n'.format(self.names[h], self.ib[h])
+                            msg += current_fmt.format(self.names[h], self.ib[h])
                             msg += '----------------------------------------------\n'
                     elif k == 2:  # capacitors
                         for h in index:
-                            msg += 'i({}) = {:10.4f} A\n'.format(self.names[h], self.ib[h])
+                            msg += current_fmt.format(self.names[h], self.ib[h])
                             msg += '----------------------------------------------\n'
                     elif k == 3:  # voltage sources
                         for h in index:
-                            msg += 'i({}) = {:10.4f} A\n'.format(self.names[h], self.ib[h])
+                            msg += current_fmt.format(self.names[h], self.ib[h])
                             msg += '----------------------------------------------\n'
                     elif k == 4:  # current sources
                         for h in index:
-                            msg += 'i({}) = {:10.4f} A\n'.format(self.names[h], self.ib[h])
+                            msg += current_fmt.format(self.names[h], self.ib[h])
                             msg += '----------------------------------------------'
 
-        elif variable.lower() == 'both':
+        if variable.lower() == 'power':
+
+            if self.analysis[0] == '.op':
+                unitsR = 'W'
+                unitsL = 'W'
+                unitsC = 'W'
+                unitsV = 'W'
+                unitsI = 'W'
+            elif self.analysis[0] == '.ac':
+                unitsR = 'W'
+                unitsL = 'var'
+                unitsC = 'var'
+                unitsV = 'VA'
+                unitsI = 'VA'
+            elif self.analysis[0] == '.tran':
+                print("Function not supported for transient")
+                return -1
+
+            msg = '==============================================\n'
+            msg += '             branch powers\n'
+            msg += '==============================================\n'
+
+            for k, index in enumerate(self.isort):
+                if polar:
+                    if k == 0:  # resistors
+                        for h in index:
+                            msg += power_fmt_polar.format(self.names[h], np.abs(self.pb[h]), unitsR, np.angle(self.pb[h], deg=True))
+                            msg += '----------------------------------------------\n'
+                    elif k == 1:  # inductors
+                        for h in index:
+                            msg += power_fmt_polar.format(self.names[h], np.abs(self.pb[h]), unitsL, np.angle(self.pb[h], deg=True))
+                            msg += '----------------------------------------------\n'
+                    elif k == 2:  # capacitors
+                        for h in index:
+                            msg += power_fmt_polar.format(self.names[h], np.abs(self.pb[h]), unitsC, np.angle(self.pb[h], deg=True))
+                            msg += '----------------------------------------------\n'
+                    elif k == 3:  # voltage sources
+                        for h in index:
+                            msg += power_fmt_polar.format(self.names[h], np.abs(self.pb[h]), unitsV, np.angle(self.pb[h], deg=True))
+                            msg += '----------------------------------------------\n'
+                    elif k == 4:  # current sources
+                        for h in index:
+                            msg += power_fmt_polar.format(self.names[h], np.abs(self.pb[h]), unitsI, np.angle(self.pb[h], deg=True))
+                            msg += '----------------------------------------------'
+                else:
+                    if k == 0:  # resistors
+                        for h in index:
+                            msg += power_fmt.format(self.names[h], self.pb[h], unitsR)
+                            msg += '----------------------------------------------\n'
+                    elif k == 1:  # inductors
+                        for h in index:
+                            msg += power_fmt.format(self.names[h], self.pb[h], unitsL)
+                            msg += '----------------------------------------------\n'
+                    elif k == 2:  # capacitors
+                        for h in index:
+                            msg += power_fmt.format(self.names[h], self.pb[h], unitsC)
+                            msg += '----------------------------------------------\n'
+                    elif k == 3:  # voltage sources
+                        for h in index:
+                            msg += power_fmt.format(self.names[h], self.pb[h], unitsV)
+                            msg += '----------------------------------------------\n'
+                    elif k == 4:  # current sources
+                        for h in index:
+                            msg += power_fmt.format(self.names[h], self.pb[h], unitsI)
+                            msg += '----------------------------------------------'
+
+        elif variable.lower() == 'all':
+
+            if self.analysis[0] == '.op':
+                unitsR = 'W'
+                unitsL = 'W'
+                unitsC = 'W'
+                unitsV = 'W'
+                unitsI = 'W'
+            elif self.analysis[0] == '.ac':
+                unitsR = 'W'
+                unitsL = 'var'
+                unitsC = 'var'
+                unitsV = 'VA'
+                unitsI = 'VA'
+            elif self.analysis[0] == '.tran':
+                print("Function not supported for transient")
+                return -1
+
             msg = '==============================================\n'
             msg += '               branch quantities\n'
             msg += '==============================================\n'
@@ -701,55 +819,65 @@ class Network:
                 if polar:
                     if k == 0:  # resistors
                         for h in index:
-                            msg += 'v({}) = {:10.4f} V < {:10.4f}°\n'.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
-                            msg += 'i({}) = {:10.4f} A < {:10.4f}°\n'.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
+                            msg += voltage_fmt_polar.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
+                            msg += current_fmt_polar.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
+                            msg += power_fmt_polar.format(self.names[h], np.abs(self.pb[h]), unitsR , np.angle(self.pb[h], deg=True))
                             msg += '----------------------------------------------\n'
                     elif k == 1:  # inductors
                         for h in index:
-                            msg += 'v({}) = {:10.4f} V < {:10.4f}°\n'.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
-                            msg += 'i({}) = {:10.4f} A < {:10.4f}°\n'.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
+                            msg += voltage_fmt_polar.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
+                            msg += current_fmt_polar.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
+                            msg += power_fmt_polar.format(self.names[h], np.abs(self.pb[h]), unitsL , np.angle(self.pb[h], deg=True))
                             msg += '----------------------------------------------\n'
                     elif k == 2:  # capacitors
                         for h in index:
-                            msg += 'v({}) = {:10.4f} V < {:10.4f}°\n'.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
-                            msg += 'i({}) = {:10.4f} A < {:10.4f}°\n'.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
+                            msg += voltage_fmt_polar.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
+                            msg += current_fmt_polar.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
+                            msg += power_fmt_polar.format(self.names[h], np.abs(self.pb[h]), unitsC , np.angle(self.pb[h], deg=True))
                             msg += '----------------------------------------------\n'
                     elif k == 3:  # voltage sources
                         for h in index:
-                            msg += 'v({}) = {:10.4f} V < {:10.4f}°\n'.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
-                            msg += 'i({}) = {:10.4f} A < {:10.4f}°\n'.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
+                            msg += voltage_fmt_polar.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
+                            msg += current_fmt_polar.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
+                            msg += power_fmt_polar.format(self.names[h], np.abs(self.pb[h]), unitsV, np.angle(self.pb[h], deg=True))
                             msg += '----------------------------------------------\n'
                     elif k == 4:  # current sources
                         for h in index:
-                            msg += 'v({}) = {:10.4f} V < {:10.4f}°\n'.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
-                            msg += 'i({}) = {:10.4f} A < {:10.4f}°\n'.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
+                            msg += voltage_fmt_polar.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
+                            msg += current_fmt_polar.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
+                            msg += power_fmt_polar.format(self.names[h], np.abs(self.pb[h]), unitsI, np.angle(self.pb[h], deg=True))
                             msg += '----------------------------------------------'
 
                 else:
                     if k == 0:  # resistors
                         for h in index:
-                            msg += 'v({}) = {:10.4f} V\n'.format(self.names[h], self.vb[h])
-                            msg += 'i({}) = {:10.4f} A\n'.format(self.names[h], self.ib[h])
+                            msg += voltage_fmt.format(self.names[h], self.vb[h])
+                            msg += current_fmt.format(self.names[h], self.ib[h])
+                            msg += power_fmt.format(self.names[h], self.pb[h], unitsR)
                             msg += '----------------------------------------------\n'
                     elif k == 1:  # inductors
                         for h in index:
-                            msg += 'v({}) = {:10.4f} V\n'.format(self.names[h], self.vb[h])
-                            msg += 'i({}) = {:10.4f} A\n'.format(self.names[h], self.ib[h])
+                            msg += voltage_fmt.format(self.names[h], self.vb[h])
+                            msg += current_fmt.format(self.names[h], self.ib[h])
+                            msg += power_fmt.format(self.names[h], self.pb[h], unitsL)
                             msg += '----------------------------------------------\n'
                     elif k == 2:  # capacitors
                         for h in index:
-                            msg += 'v({}) = {:10.4f} V\n'.format(self.names[h], self.vb[h])
-                            msg += 'i({}) = {:10.4f} A\n'.format(self.names[h], self.ib[h])
+                            msg += voltage_fmt.format(self.names[h], self.vb[h])
+                            msg += current_fmt.format(self.names[h], self.ib[h])
+                            msg += power_fmt.format(self.names[h], self.pb[h], unitsC)
                             msg += '----------------------------------------------\n'
                     elif k == 3:  # voltage sources
                         for h in index:
-                            msg += 'v({}) = {:10.4f} V\n'.format(self.names[h], self.vb[h])
-                            msg += 'i({}) = {:10.4f} A\n'.format(self.names[h], self.ib[h])
+                            msg += voltage_fmt.format(self.names[h], self.vb[h])
+                            msg += current_fmt.format(self.names[h], self.ib[h])
+                            msg += power_fmt.format(self.names[h], self.pb[h], unitsV)
                             msg += '----------------------------------------------\n'
                     elif k == 4:  # current sources
                         for h in index:
-                            msg += 'v({}) = {:10.4f} V\n'.format(self.names[h], self.vb[h])
-                            msg += 'i({}) = {:10.4f} A\n'.format(self.names[h], self.ib[h])
+                            msg += voltage_fmt.format(self.names[h], self.vb[h])
+                            msg += current_fmt.format(self.names[h], self.ib[h])
+                            msg += power_fmt.format(self.names[h], self.pb[h], unitsI)
                             msg += '----------------------------------------------'
 
         if message:
