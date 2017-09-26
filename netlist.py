@@ -938,9 +938,9 @@ class Network:
                     id = self.names.index(variable)
                     nodes = [n - 1 for n in self.nodes[id] if n != 0]
                     if len(nodes) == 2:
-                        v = self.x[:,nodes[0]] - self.x[:,nodes[1]]
+                        v = self.x[nodes[0], :] - self.x[nodes[1], :]
                     else:
-                        v = self.x[:, nodes[0]]
+                        v = self.x[nodes[0], :]
                     if makesubplot:
                         plt.axes(axs[0])
                     plt.plot(self.t, v, label=legend_enties[k])
@@ -955,9 +955,9 @@ class Network:
                         id = self.names.index(variable)
                         nodes = [n - 1 for n in self.nodes[id] if n != 0]
                         if len(nodes) == 2:
-                            v = self.x[:, nodes[0]] - self.x[:, nodes[1]]
+                            v = self.x[nodes[0], :] - self.x[nodes[1], :]
                         else:
-                            v = self.x[:, nodes[0]]
+                            v = self.x[nodes[0], :]
 
                         if (variable[0] == 'R'):
                             i = v / self.values[id]
@@ -973,7 +973,7 @@ class Network:
                             if variable == self.names[il]:
                                 n = self.node_num + h
 
-                        i = self.x[:, n]
+                        i = self.x[n, :]
 
                     elif (variable[0] == 'V'):
                         indexV = sorted(self.isort[3])
@@ -981,7 +981,7 @@ class Network:
                             if variable == self.names[iv]:
                                 n = self.node_num + len(self.isort[1]) + h
 
-                        i = self.x[:, n]
+                        i = self.x[n, :]
 
                     if makesubplot:
                         plt.axes(axs[1])

@@ -102,19 +102,19 @@ def transient_solve(net):
     net.rhs_matrix()
 
     # initialize solution space
-    net.x = np.zeros((net.t.size, net.G.shape[0]))
+    net.x = np.zeros((net.G.shape[0], net.t.size))
 
     # fill with initial conditions
     NV = len(net.isort[3])
-    net.x[0, :] = np.concatenate((net_op.x[:net_op.node_num],
+    net.x[:, 0] = np.concatenate((net_op.x[:net_op.node_num],
                                   np.array(net_op.values)[sorted(net.isort[1])],
                                   net_op.x[net_op.node_num:(net_op.node_num + NV)]))
 
     # Solution (Integration using trepezoidal rule. Ref: Vlach, eq 9.4.6, pag. 277)
     K = net.C + 0.5 * h * net.G
     for k in range(1, net.t.size):
-        rhs = (net.C - 0.5 * h * net.G) * net.x[k - 1, :] + 0.5 * h * (2 * net.rhs)
-        net.x[k, :] = spsolve(K, rhs)
+        rhs = (net.C - 0.5 * h * net.G) * net.x[:, k - 1] + 0.5 * h * (2 * net.rhs)
+        net.x[:, k] = spsolve(K, rhs)
 
 
 def net_solve(net):
