@@ -534,29 +534,29 @@ class Network:
         if self.vb is None:
             self.branch_voltage()
 
-        ibranch = []
+        ibranch = np.zeros_like(self.vb)
         cnt_l = 0
         cnt_v = 0
-        for name, val, voltage in zip(self.names, self.values, self.vb):
+        for k, (name, val, voltage) in enumerate(zip(self.names, self.values, self.vb)):
             if name[0].upper() == 'R':
-                ibranch.append(voltage / val)
+                ibranch[k] = voltage / val
             elif name[0].upper() == 'L':
-                ibranch.append(self.x[self.node_num + cnt_l])
+                ibranch[k] = self.x[self.node_num + cnt_l]
                 cnt_l += 1
             elif name[0].upper() == 'C':
-                if self.analysis[0] == '.op':
-                    ibranch.append(0.0)
+                if self.analysis[0] == '.op':    # the current is zero, hence, do nothing
+                    pass
                 elif self.analysis[0] == '.ac':
                     f = float(self.analysis[-1])
                     Xc = -1.0 / (2 * np.pi * f * val)
-                    ibranch.append(voltage / (Xc * 1j))
+                    ibranch[k] = voltage / (Xc * 1j)
             elif name[0].upper() == 'V':
-                ibranch.append(self.x[self.node_num + len(self.isort[1]) + cnt_v])
+                ibranch[k] = self.x[self.node_num + len(self.isort[1]) + cnt_v]
                 cnt_v += 1
             elif name[0].upper() == 'I':
-                ibranch.append(val)
+                ibranch[k] = val
 
-        self.ib = np.array(ibranch)
+        self.ib = ibranch
 
     def branch_power(self):
         """
