@@ -521,7 +521,7 @@ class Network:
             return None
 
         # branch voltages
-        self.vb = self.A.transpose() * self.x[:self.node_num]
+        self.vb = self.A.transpose() * self.x[:self.node_num, ...]
 
     def branch_current(self):
         """
@@ -539,9 +539,9 @@ class Network:
         cnt_v = 0
         for k, (name, val, voltage) in enumerate(zip(self.names, self.values, self.vb)):
             if name[0].upper() == 'R':
-                ibranch[k] = voltage / val
+                ibranch[k, ...] = voltage / val
             elif name[0].upper() == 'L':
-                ibranch[k] = self.x[self.node_num + cnt_l]
+                ibranch[k, ...] = self.x[self.node_num + cnt_l, ...]
                 cnt_l += 1
             elif name[0].upper() == 'C':
                 if self.analysis[0] == '.op':    # the current is zero, hence, do nothing
@@ -550,11 +550,17 @@ class Network:
                     f = float(self.analysis[-1])
                     Xc = -1.0 / (2 * np.pi * f * val)
                     ibranch[k] = voltage / (Xc * 1j)
+                elif self.analysis[0] == '.tran':
+                    from scipy.interpolate import CubicSpline
+                    cs = CubicSpline(self.t, voltage)
+                    csd = cs.derivative()
+                    ibranch[k, ...] = val * csd(self.t)
+
             elif name[0].upper() == 'V':
-                ibranch[k] = self.x[self.node_num + len(self.isort[1]) + cnt_v]
+                ibranch[k, ...] = self.x[self.node_num + len(self.isort[1]) + cnt_v, ...]
                 cnt_v += 1
             elif name[0].upper() == 'I':
-                ibranch[k] = val
+                ibranch[k, ...] = val
 
         self.ib = ibranch
 
