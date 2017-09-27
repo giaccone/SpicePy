@@ -573,21 +573,18 @@ class Network:
             * self.pb: real power for '.op' and complex power for '.ac'
         """
 
-        if self.analysis[0] != '.tran':
-            # check is branch voltages are available
-            if self.vb is None:
-                self.branch_voltage()
+        # check is branch voltages are available
+        if self.vb is None:
+            self.branch_voltage()
 
-            # check is branch current are available
-            if self.ib is None:
-                self.branch_current()
+        # check is branch current are available
+        if self.ib is None:
+            self.branch_current()
 
-            if self.analysis[0] == '.op':
-                self.pb = self.vb * self.ib
-            elif self.analysis[0] == '.ac':
-                self.pb = self.vb * np.conj(self.ib)
+        if self.analysis[0] == '.ac':
+            self.pb = self.vb * np.conj(self.ib)
         else:
-            print("Function not supported for transient")
+            self.pb = self.vb * self.ib
 
     def reorder(self):
         """
