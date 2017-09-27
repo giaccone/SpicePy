@@ -592,7 +592,7 @@ class Network:
 
         :param arg:
             * can be a string in the form 'R1 C1 (2,3) (3,0) (2)'
-            * can be a list of node-pair in the form [[2,3],[3,0]
+            * can be a list of node-pair in the form [[2,3],[3,0]]
         :return: voltages (numpy.array)
         """
 
