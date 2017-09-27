@@ -586,6 +586,146 @@ class Network:
         else:
             self.pb = self.vb * self.ib
 
+    def get_voltage(self, arg):
+        """
+        "get_voltage" computes a voltage across components of between nodes
+
+        :param arg:
+            * can be a string in the form 'R1 C1 (2,3) (3,0)'
+            * can be a list of node-pair in the form [[2,3],[3,0]
+        :return: voltages (numpy.array)
+        """
+
+        if isinstance(arg, str):    # in the input is a string
+            # make all uppercase and split
+            arg = arg.upper()
+            voltage_list = arg.split()
+
+            # initialize output
+            if self.analysis[0] == '.tran':
+                v = np.zeros((len(voltage_list), self.t.size), dtype=self.x.dtype)
+            else:
+                v = np.zeros(len(voltage_list), dtype=self.x.dtype)
+
+            # cycle on voltages
+            for k, variable in enumerate(voltage_list):
+
+                # remove unused symbols
+                remove_char = ('(', ')')
+                for char in remove_char:
+                    variable = variable.replace(char, '')
+
+                # check variable/node-pair
+                if variable in self.names:
+                    id = self.names.index(variable)
+                    nodes = [n - 1 for n in self.nodes[id] if n != 0]
+                    if len(nodes) == 2:
+                        v[k,...] = self.x[nodes[0], ...] - self.x[nodes[1], ...]
+                    else:
+                        v[k,...] = self.x[nodes[0], ...]
+                else:
+                    nodes = [int(k) - 1 for k in variable.split(',') if k != '0']
+                    if len(nodes) == 2:
+                        v[k,...] = self.x[nodes[0], ...] - self.x[nodes[1], ...]
+                    else:
+                        v[k,...] = self.x[nodes[0], ...]
+
+        else: # in the input is a node-pair list
+
+            # check is a single node-pair is given
+            if not isinstance(arg[0], list):
+                arg = [arg]
+
+            # initialize output
+            if self.analysis[0] == '.tran':
+                v = np.zeros((len(arg), self.t.size))
+            else:
+                v = np.zeros(len(arg))
+
+            # cycle on voltages
+            for k, index in enumerate(arg):
+                nodes = [n - 1 for n in index if n != 0]
+                if len(nodes) == 2:
+                    v[k, ...] = self.x[nodes[0], ...] - self.x[nodes[1], ...]
+                else:
+                    v[k, ...] = self.x[nodes[0], ...]
+
+
+        # remove one dimension for single voltage in .tran
+        if len(v.shape) == 2 and v.shape[0] == 1:
+            v = v.flatten()
+
+        return v
+
+    def get_current(self, arg):
+        """
+        "get_current" computes a current in components/branches
+
+        :param arg:
+            * can be a string in the form 'R1 C1'
+            * can be a list of branch-index in the form [1, 3, 0]
+        :return: currents (numpy.array)
+        """
+
+        if isinstance(arg, str):    # in the input is a string
+            # make all uppercase and split
+            arg = arg.upper()
+            current_list = arg.split()
+        else:
+            current_list = []
+            for index in arg:
+                current_list.append(self.names[index])
+
+
+        # initialize output
+        if self.analysis[0] == '.tran':
+            i = np.zeros((len(current_list), self.t.size), dtype=self.x.dtype)
+        else:
+            i = np.zeros(len(current_list), dtype=self.x.dtype)
+
+        # cycle on voltages
+        for k, variable in enumerate(current_list):
+
+            # remove unused symbols
+            remove_char = ('(', ')')
+            for char in remove_char:
+                variable = variable.replace(char, '')
+
+            if (variable[0] == 'R') or (variable[0] == 'C'):
+
+                v = self.get_voltage(variable)
+                id = self.names.index(variable)
+                if (variable[0] == 'R'):
+                    i[k, ...] = v / self.values[id]
+                elif (variable[0] == 'C'):
+                    from scipy.interpolate import CubicSpline
+                    cs = CubicSpline(self.t, v)
+                    csd = cs.derivative()
+                    i[k, ...] = self.values[id] * csd(self.t)
+
+            elif (variable[0] == 'L'):
+                indexL = sorted(self.isort[1])
+                for h, il in enumerate(indexL):
+                    if variable == self.names[il]:
+                        n = self.node_num + h
+
+                i[k, ...] = self.x[n, ...]
+
+            elif (variable[0] == 'V'):
+                indexV = sorted(self.isort[3])
+                for h, iv in enumerate(indexV):
+                    if variable == self.names[iv]:
+                        n = self.node_num + len(self.isort[1]) + h
+
+                i[k, ...] = self.x[n, ...]
+
+        # remove one dimension for single voltage in .tran
+        if len(i.shape) == 2 and i.shape[0] == 1:
+            i = i.flatten()
+
+        return i
+
+
     def reorder(self):
         """
         'reorder' reorder the netlist. Order: R, L, C, V and I
