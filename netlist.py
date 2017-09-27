@@ -922,7 +922,7 @@ class Network:
 
             # get variables to be plotted
             plot_list = plot_cmd.split()[1:]
-            legend_enties = plot_cmd.split()[1:]
+            legend_entries = plot_cmd.split()[1:]
 
             # initialize figure
             if makesubplot:
@@ -938,15 +938,23 @@ class Network:
                     for char in remove_char:
                         variable = variable.replace(char, '')
 
-                    id = self.names.index(variable)
-                    nodes = [n - 1 for n in self.nodes[id] if n != 0]
-                    if len(nodes) == 2:
-                        v = self.x[nodes[0], :] - self.x[nodes[1], :]
+                    if variable in self.names:
+                        id = self.names.index(variable)
+                        nodes = [n - 1 for n in self.nodes[id] if n != 0]
+                        if len(nodes) == 2:
+                            v = self.x[nodes[0], :] - self.x[nodes[1], :]
+                        else:
+                            v = self.x[nodes[0], :]
                     else:
-                        v = self.x[nodes[0], :]
+                        nodes = [int(k) - 1 for k in variable.split(',') if k != '0']
+                        if len(nodes) == 2:
+                            v = self.x[nodes[0], :] - self.x[nodes[1], :]
+                        else:
+                            v = self.x[nodes[0], :]
                     if makesubplot:
                         plt.axes(axs[0])
-                    plt.plot(self.t, v, label=legend_enties[k])
+                    plt.plot(self.t, v, label=legend_entries[k])
+
 
                 elif variable[0] == 'I':
                     remove_char = ('I', '(', ')')
@@ -988,7 +996,7 @@ class Network:
 
                     if makesubplot:
                         plt.axes(axs[1])
-                    plt.plot(self.t, i, label=legend_enties[k])
+                    plt.plot(self.t, i, label=legend_entries[k])
 
 
 
