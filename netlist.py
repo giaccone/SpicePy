@@ -110,7 +110,7 @@ class Network:
 
                 if line[0][0] == '.':  # analysis/command identifier
                     if (line.lower().find('.plot') != -1):
-                        plot_cmd = line[:-1]
+                        plot_cmd = line
                     else:
                         # split into a list
                         sline = line.split()
@@ -719,6 +719,10 @@ class Network:
 
                 i[k, ...] = self.x[n, ...]
 
+            elif (variable[0] == 'I'):
+                id = self.names.index(variable)
+                i[k, ...] = self.values[id]
+
         # remove one dimension for single voltage in .tran
         if len(i.shape) == 2 and i.shape[0] == 1:
             i = i.flatten()
@@ -1078,19 +1082,8 @@ class Network:
                     for char in remove_char:
                         variable = variable.replace(char, '')
 
-                    if variable in self.names:
-                        id = self.names.index(variable)
-                        nodes = [n - 1 for n in self.nodes[id] if n != 0]
-                        if len(nodes) == 2:
-                            v = self.x[nodes[0], :] - self.x[nodes[1], :]
-                        else:
-                            v = self.x[nodes[0], :]
-                    else:
-                        nodes = [int(k) - 1 for k in variable.split(',') if k != '0']
-                        if len(nodes) == 2:
-                            v = self.x[nodes[0], :] - self.x[nodes[1], :]
-                        else:
-                            v = self.x[nodes[0], :]
+                    v = self.get_voltage(variable)
+
                     if makesubplot:
                         plt.axes(axs[0])
                     plt.plot(self.t, v, label=legend_entries[k])
@@ -1102,37 +1095,7 @@ class Network:
                     for char in remove_char:
                         variable = variable.replace(char, '')
 
-                    if (variable[0] == 'R') or (variable[0] == 'C'):
-                        id = self.names.index(variable)
-                        nodes = [n - 1 for n in self.nodes[id] if n != 0]
-                        if len(nodes) == 2:
-                            v = self.x[nodes[0], :] - self.x[nodes[1], :]
-                        else:
-                            v = self.x[nodes[0], :]
-
-                        if (variable[0] == 'R'):
-                            i = v / self.values[id]
-                        elif (variable[0] == 'C'):
-                            from scipy.interpolate import CubicSpline
-                            cs = CubicSpline(self.t, v)
-                            csd = cs.derivative()
-                            i = self.values[id] * csd(self.t)
-
-                    elif (variable[0] == 'L'):
-                        indexL = sorted(self.isort[1])
-                        for h, il in enumerate(indexL):
-                            if variable == self.names[il]:
-                                n = self.node_num + h
-
-                        i = self.x[n, :]
-
-                    elif (variable[0] == 'V'):
-                        indexV = sorted(self.isort[3])
-                        for h, iv in enumerate(indexV):
-                            if variable == self.names[iv]:
-                                n = self.node_num + len(self.isort[1]) + h
-
-                        i = self.x[n, :]
+                    i = self.get_current(variable)
 
                     if makesubplot:
                         plt.axes(axs[1])
@@ -1167,8 +1130,3 @@ class Network:
                 hf.savefig(filename, dpi=dpi_value)
 
         return hf
-
-
-
-
-
