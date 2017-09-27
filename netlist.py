@@ -591,7 +591,7 @@ class Network:
         "get_voltage" computes a voltage across components of between nodes
 
         :param arg:
-            * can be a string in the form 'R1 C1 (2,3) (3,0)'
+            * can be a string in the form 'R1 C1 (2,3) (3,0) (2)'
             * can be a list of node-pair in the form [[2,3],[3,0]
         :return: voltages (numpy.array)
         """
@@ -662,7 +662,7 @@ class Network:
         "get_current" computes a current in components/branches
 
         :param arg:
-            * can be a string in the form 'R1 C1'
+            * can be a string in the form 'R1 C1 (1) (0)'
             * can be a list of branch-index in the form [1, 3, 0]
         :return: currents (numpy.array)
         """
@@ -690,6 +690,9 @@ class Network:
             remove_char = ('(', ')')
             for char in remove_char:
                 variable = variable.replace(char, '')
+
+            if variable not in self.names:
+                variable = self.names[int(variable)]
 
             if (variable[0] == 'R') or (variable[0] == 'C'):
 
@@ -722,6 +725,7 @@ class Network:
             elif (variable[0] == 'I'):
                 id = self.names.index(variable)
                 i[k, ...] = self.values[id]
+
 
         # remove one dimension for single voltage in .tran
         if len(i.shape) == 2 and i.shape[0] == 1:
