@@ -51,6 +51,37 @@ class Network:
         * incidence_matrix(self):
     """
 
+    def __repr__(self):
+        return "SpicePy.Network: {} analysis".format(self.analysis[0])
+
+    def __str__(self):
+        msg = '------------------------\n'
+        msg += '    SpicePy.Network:\n'
+        msg += '------------------------\n'
+        for ele, nodes, val in zip(self.names, self.nodes, self.values):
+            if np.iscomplex(val):
+                msg += "{} {} {} {} {}\n".format(ele, *nodes, np.abs(val), np.angle(val) * 180/np.pi)
+            elif ele[0].upper() == 'C' or ele[0].upper() == 'L':
+                if ele in self.IC:
+                    msg += "{} {} {} {} ic={}\n".format(ele, *nodes, val, self.IC[ele])
+                else:
+                    msg += "{} {} {} {}\n".format(ele, *nodes, val)
+            else:
+                msg += "{} {} {} {}\n".format(ele, *nodes, val)
+
+        msg += " ".join(self.analysis) + '\n'
+
+        if self.plot_cmd is not None:
+            msg += self.plot_cmd + '\n'
+
+        msg += '------------------------\n'
+        msg += '* number of nodes {}\n'.format(self.node_num)
+        msg += '* number of branches {}\n'.format(len(self.names))
+        msg += '------------------------\n'
+
+        return msg
+
+
     def __init__(self, filename):
         """
         __init__ initializes common attributes using read_netlist method
