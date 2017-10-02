@@ -1,4 +1,4 @@
-# import SciPy modules
+# import SpicePy modules
 import netlist as ntl
 from netsolve import net_solve
 
