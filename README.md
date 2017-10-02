@@ -8,17 +8,6 @@
 
 This document provides information about features and installation procedure. For the user's guide please refer to the [Wiki section](https://github.com/giaccone/SpicePy/wiki).
 
-# Feature (and changelog)
-## September 1, 2017
-
-* solution of dynamic networks (tested first and second order circuits)
-
-## August 29, 2017
-
-* solution of DC network
-* computation of the operating point (including dynamic components)
-* solution of AC network (only single frequency right now)
-
 # Installation
 
 1. Clone the repository:
@@ -28,13 +17,38 @@ This document provides information about features and installation procedure. Fo
 3. done!
 
 ## Requirements
-At the time of writing (August 29, 2017), the project is based on:
+At the time of writing (October 4, 2017), the project is based on:
 
 * `Python 3.6.2`
 * `numpy 1.13.1`
 * `scipy 0.19.1`
 * `matplotlib 2.0.2`
 
-SpicePy should work also with earlier version of Python (not Python 2), numpy, scipy and matplotlib.
+This is not a frozen configuration. I'm use to update these packages as soon as an update is available.
+
+Finally, SpicePy should work also with earlier version of Python (but **not** Python 2), numpy, scipy and matplotlib.
+
+# Feature (and changelog)
+
+## October 2, 2017
+
+* new methods to compute/print/plot generic voltages and current
+* added examples in the folder 'demo'.
+
+(Check commit history for more details).
+
+## September 1, 2017
+
+* solution of dynamic networks. So far, tested first and second order circuits.
+
+(Check commit history for more details).
+
+## August 29, 2017
+
+* solution of DC network
+* computation of the operating point (including dynamic components)
+* solution of AC network (only single frequency right now)
+
+
 
 
