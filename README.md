@@ -28,6 +28,8 @@ This is not a frozen configuration. I'm use to update these packages as soon as 
 
 Finally, SpicePy should work also with earlier version of Python (but **not** Python 2), numpy, scipy and matplotlib.
 
+Last but not least, as many other Python tools a convenient method to handle SpicePy is `iPython`, a powerful interactive Python shell where Python can be used interactively.
+
 # Feature (and changelog)
 
 ## October 2, 2017
