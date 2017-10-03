@@ -780,15 +780,15 @@ class Network:
         icur = []
         for k,ele in enumerate(self.names):
             if ele[0].upper() == 'R':
-                ires.append([int(ele[1]),k])
+                ires.append([int(ele[1:]),k])
             elif ele[0].upper() == 'L':
-                iind.append([int(ele[1]),k])
+                iind.append([int(ele[1:]),k])
             elif ele[0].upper() == 'C':
-                icap.append([int(ele[1]),k])
+                icap.append([int(ele[1:]),k])
             elif ele[0].upper() == 'V':
-                ivolt.append([int(ele[1]),k])
+                ivolt.append([int(ele[1:]),k])
             elif ele[0].upper() == 'I':
-                icur.append([int(ele[1]),k])
+                icur.append([int(ele[1:]),k])
 
         self.isort = []
         self.isort.append([k for foo, k in sorted(ires)])
