@@ -575,13 +575,13 @@ class Network:
                 ibranch[k, ...] = self.x[self.node_num + cnt_l, ...]
                 cnt_l += 1
             elif name[0].upper() == 'C':
-                if self.analysis[0] == '.op':    # the current is zero, hence, do nothing
+                if self.analysis[0].lower() == '.op':    # the current is zero, hence, do nothing
                     pass
-                elif self.analysis[0] == '.ac':
+                elif self.analysis[0].lower() == '.ac':
                     f = float(self.analysis[-1])
                     Xc = -1.0 / (2 * np.pi * f * val)
                     ibranch[k] = voltage / (Xc * 1j)
-                elif self.analysis[0] == '.tran':
+                elif self.analysis[0].lower() == '.tran':
                     from scipy.interpolate import CubicSpline
                     cs = CubicSpline(self.t, voltage)
                     csd = cs.derivative()
@@ -612,7 +612,7 @@ class Network:
         if self.ib is None:
             self.branch_current()
 
-        if self.analysis[0] == '.ac':
+        if self.analysis[0].lower() == '.ac':
             self.pb = self.vb * np.conj(self.ib)
         else:
             self.pb = self.vb * self.ib
@@ -633,7 +633,7 @@ class Network:
             voltage_list = arg.split()
 
             # initialize output
-            if self.analysis[0] == '.tran':
+            if self.analysis[0].lower() == '.tran':
                 v = np.zeros((len(voltage_list), self.t.size), dtype=self.x.dtype)
             else:
                 v = np.zeros(len(voltage_list), dtype=self.x.dtype)
@@ -668,7 +668,7 @@ class Network:
                 arg = [arg]
 
             # initialize output
-            if self.analysis[0] == '.tran':
+            if self.analysis[0].lower() == '.tran':
                 v = np.zeros((len(arg), self.t.size))
             else:
                 v = np.zeros(len(arg))
@@ -709,7 +709,7 @@ class Network:
 
 
         # initialize output
-        if self.analysis[0] == '.tran':
+        if self.analysis[0].lower() == '.tran':
             i = np.zeros((len(current_list), self.t.size), dtype=self.x.dtype)
         else:
             i = np.zeros(len(current_list), dtype=self.x.dtype)
@@ -911,19 +911,19 @@ class Network:
 
         if variable.lower() == 'power':
 
-            if self.analysis[0] == '.op':
+            if self.analysis[0].lower() == '.op':
                 unitsR = 'W'
                 unitsL = 'W'
                 unitsC = 'W'
                 unitsV = 'W'
                 unitsI = 'W'
-            elif self.analysis[0] == '.ac':
+            elif self.analysis[0].lower() == '.ac':
                 unitsR = 'W'
                 unitsL = 'var'
                 unitsC = 'var'
                 unitsV = 'VA'
                 unitsI = 'VA'
-            elif self.analysis[0] == '.tran':
+            elif self.analysis[0].lower() == '.tran':
                 print("Function not supported for transient")
                 return -1
 
@@ -977,19 +977,19 @@ class Network:
 
         elif variable.lower() == 'all':
 
-            if self.analysis[0] == '.op':
+            if self.analysis[0].lower() == '.op':
                 unitsR = 'W'
                 unitsL = 'W'
                 unitsC = 'W'
                 unitsV = 'W'
                 unitsI = 'W'
-            elif self.analysis[0] == '.ac':
+            elif self.analysis[0].lower() == '.ac':
                 unitsR = 'W'
                 unitsL = 'var'
                 unitsC = 'var'
                 unitsV = 'VA'
                 unitsI = 'VA'
-            elif self.analysis[0] == '.tran':
+            elif self.analysis[0].lower() == '.tran':
                 print("Function not supported for transient")
                 return -1
 
@@ -1071,7 +1071,7 @@ class Network:
     def plot(self, to_file=False, filename=None, dpi_value=150):
 
         # check if the analysis is '.tran'
-        if self.analysis[0] != '.tran':
+        if self.analysis[0].lower() != '.tran':
             print("plot not supported of analysis: '{}".format(self.analysis[0]))
             return -1
         else:
