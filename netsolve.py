@@ -123,9 +123,9 @@ def net_solve(net):
     :param net:
     :return:
     """
-    if net.analysis[0] == '.op':
+    if net.analysis[0].lower() == '.op':
         dc_solve(net)
-    elif net.analysis[0] == '.ac':
+    elif net.analysis[0].lower() == '.ac':
         ac_solve(net)
-    elif net.analysis[0] == '.tran':
+    elif net.analysis[0].lower() == '.tran':
         transient_solve(net)
