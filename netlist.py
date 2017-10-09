@@ -32,6 +32,7 @@ class Network:
         * self.values: component values
         * self.IC: initial conditions for dynamic components (stored as dict)
         * self.nodes: component nodes (only two-port right now)
+        * self.node_label2num: dictionary to convert node-labels to local node-number
         * self.node_num: number of nodes in the network
         * self.analysis: type of analysis
         * self.plot_cmd: plot directive for transient analysis
@@ -48,26 +49,41 @@ class Network:
         * self.pb:
     Methods:
         * read_netlist(self): reads a SPICE netlist (used by '__init__')
-        * incidence_matrix(self):
+        * incidence_matrix(self, filename):
+        * conductance_matrix(self):
+        * dynamic_matrix(self):
+        * rhs_matrix(self):
+        * branch_voltage(self):
+        * branch_current(self):
+        * branch_power(self):
+        * get_voltage(self, arg):
+        * get_current(self, arg):
+        * reorder(self):
+        * print(self, variable='all', polar=False, message=False):
+        * plot(self, to_file=False, filename=None, dpi_value=150):
     """
 
     def __repr__(self):
         return "SpicePy.Network: {} analysis".format(self.analysis[0])
 
     def __str__(self):
+        # create local dictionary to convert node-numbers to node-labels
+        num2node_label = {num: name for name, num in self.node_label2num.items()}
+
+        # build message to print
         msg = '------------------------\n'
         msg += '    SpicePy.Network:\n'
         msg += '------------------------\n'
         for ele, nodes, val in zip(self.names, self.nodes, self.values):
             if np.iscomplex(val):
-                msg += "{} {} {} {} {}\n".format(ele, *nodes, np.abs(val), np.angle(val) * 180/np.pi)
+                msg += "{} {} {} {} {}\n".format(ele, num2node_label[nodes[0]], num2node_label[nodes[1]], np.abs(val), np.angle(val) * 180/np.pi)
             elif ele[0].upper() == 'C' or ele[0].upper() == 'L':
                 if ele in self.IC:
-                    msg += "{} {} {} {} ic={}\n".format(ele, *nodes, val, self.IC[ele])
+                    msg += "{} {} {} {} ic={}\n".format(ele, num2node_label[nodes[0]], num2node_label[nodes[1]], val, self.IC[ele])
                 else:
-                    msg += "{} {} {} {}\n".format(ele, *nodes, val)
+                    msg += "{} {} {} {}\n".format(ele, num2node_label[nodes[0]], num2node_label[nodes[1]], val)
             else:
-                msg += "{} {} {} {}\n".format(ele, *nodes, val)
+                msg += "{} {} {} {}\n".format(ele, num2node_label[nodes[0]], num2node_label[nodes[1]], val)
 
         msg += " ".join(self.analysis) + '\n'
 
@@ -75,7 +91,7 @@ class Network:
             msg += self.plot_cmd + '\n'
 
         msg += '------------------------\n'
-        msg += '* number of nodes {}\n'.format(self.node_num)
+        msg += '* number of nodes {}\n'.format(self.node_num + 1)
         msg += '* number of branches {}\n'.format(len(self.names))
         msg += '------------------------\n'
 
@@ -94,6 +110,7 @@ class Network:
          self.values,
          self.IC,
          self.nodes,
+         self.node_label2num,
          self.node_num,
          self.analysis,
          self.plot_cmd) = self.read_netlist(filename)
@@ -129,115 +146,137 @@ class Network:
         # initialize variable names and values
         names = []
         values = []
-        nodes = []
+        node_labels = []
         IC = {}
         plot_cmd = None
         analysis = None
+
+        # initial letter of alla available components
+        initials = ['V', 'I', 'R', 'C', 'L']
+        components = []
 
         # get the analysis type
         with open(filename) as f:
             # cycle on lines
             for b, line in enumerate(f):
 
-                if line[0][0] == '.':  # analysis/command identifier
-                    if (line.lower().find('.plot') != -1):
-                        plot_cmd = line
-                    else:
-                        # split into a list
-                        sline = line.split()
-                        analysis = sline
-        f.close()
+                # look for inline comments
+                if ';' in line:
+                    # remove comment
+                    line = line[:line.index(';')]
 
-        # read the netlist (according to analysis type)
-        with open(filename) as f:
-            # cycle on lines
-            for b, line in enumerate(f):
-                # split into a list
-                sline = line.split()
+                # if it is not a line-comment
+                if line[0] != '*':
 
-                if sline[0][0] != '.':  # analysis identifier
-                    # get branch nodes
-                    N1 = int(sline[1])
-                    N2 = int(sline[2])
+                    # check if line describes a component
+                    if line[0].upper() in initials:
+                        # remove carriage return
+                        line = line.replace('\n', '')
+                        # add to component list
+                        components.append(line)
 
-                # detect element type
-                if sline[0][0].upper() == 'R':  # resistance
-                    # add name and value
-                    names.append(sline[0])
-                    values.append(float(sline[3]))
-                    nodes.append([N1, N2])
+                    # check if line describes a command
+                    elif line[0] == '.':
+                        # remove carriage return
+                        line = line.replace('\n', '')
 
-                    # update counter
-                    Nn = max([N1, N2, Nn])
+                        if (line.lower().find('.end') != -1):    # if .end is reached exit
+                            break
 
-                # inductor
-                elif sline[0][0].upper() == 'L':
-                    # add name and value
-                    names.append(sline[0])
-                    values.append(float(sline[3]))
-                    nodes.append([N1, N2])
+                        elif (line.lower().find('.plot') != -1):    # if .plot is reached save it
+                            plot_cmd = line
 
-                    if analysis[0] == '.tran':
-                        if len(sline) == 5:
-                            if sline[4].lower().find('ic') != -1:
-                                IC[sline[0]] = float(sline[4].split('=')[1])
-                            else:
-                                IC[sline[0]] = 'Please check this --> ' + sline[-1]
-                                print("Warning: wrong definition of IC for {} --> ".format(sline[0]) + IC[sline[0]])
+                        else:    # save analysis type
+                            # split into a list
+                            sline = line.split()
+                            analysis = sline
+
+                else:
+                    pass
+
+        # cycle on component list
+        for line in components:
+            # split into a list
+            sline = line.split()
+
+            # detect element type
+            if sline[0][0].upper() == 'R':  # resistance
+                # add name and value
+                names.append(sline[0])
+                values.append(float(sline[3]))
+                node_labels.append(sline[1:3])
+
+            # inductor
+            elif sline[0][0].upper() == 'L':
+                # add name and value
+                names.append(sline[0])
+                values.append(float(sline[3]))
+                node_labels.append(sline[1:3])
+
+                if analysis[0] == '.tran':
+                    if len(sline) == 5:
+                        if sline[4].lower().find('ic') != -1:
+                            IC[sline[0]] = float(sline[4].split('=')[1])
                         else:
-                            IC[sline[0]] = 0
+                            IC[sline[0]] = 'Please check this --> ' + sline[-1]
+                            print("Warning: wrong definition of IC for {} --> ".format(sline[0]) + IC[sline[0]])
+                    else:
+                        IC[sline[0]] = 0
 
-                    # update counter
-                    Nn = max([N1, N2, Nn])
+            # capacitor
+            elif sline[0][0].upper() == 'C':
+                # add name and value
+                names.append(sline[0])
+                values.append(float(sline[3]))
+                node_labels.append(sline[1:3])
 
-                # capacitor
-                elif sline[0][0].upper() == 'C':
-                    # add name and value
-                    names.append(sline[0])
-                    values.append(float(sline[3]))
-                    nodes.append([N1, N2])
-
-                    if analysis[0] == '.tran':
-                        if len(sline) == 5:
-                            if sline[4].lower().find('ic') != -1:
-                                IC[sline[0]] = float(sline[4].split('=')[1])
-                            else:
-                                IC[sline[0]] = 'Please check this --> ' + sline[-1]
-                                print("Warning: wrong definition of IC for {} --> ".format(sline[0]) + IC[sline[0]])
+                if analysis[0] == '.tran':
+                    if len(sline) == 5:
+                        if sline[4].lower().find('ic') != -1:
+                            IC[sline[0]] = float(sline[4].split('=')[1])
                         else:
-                            IC[sline[0]] = 0
-
-                    # update counter
-                    Nn = max([N1, N2, Nn])
-
-                # independent current source
-                elif sline[0][0].upper() == 'I':
-                    # add name and value
-                    names.append(sline[0])
-                    if (analysis[0] == '.ac') & (len(sline) == 5):
-                        values.append(float(sline[3]) * (np.cos(float(sline[4]) * pi / 180) + np.sin(float(sline[4]) * pi / 180) * 1j))
+                            IC[sline[0]] = 'Please check this --> ' + sline[-1]
+                            print("Warning: wrong definition of IC for {} --> ".format(sline[0]) + IC[sline[0]])
                     else:
-                        values.append(float(sline[3]))
-                    nodes.append([N1, N2])
+                        IC[sline[0]] = 0
 
-                    # update counter
-                    Nn = max([N1, N2, Nn])
+            # independent current source
+            elif sline[0][0].upper() == 'I':
+                # add name and value
+                names.append(sline[0])
+                if (analysis[0] == '.ac') & (len(sline) == 5):
+                    values.append(float(sline[3]) * (
+                    np.cos(float(sline[4]) * pi / 180) + np.sin(float(sline[4]) * pi / 180) * 1j))
+                else:
+                    values.append(float(sline[3]))
+                node_labels.append(sline[1:3])
 
-                # independent voltage sources
-                elif sline[0][0].upper() == 'V':  # independent voltage sources
-                    # add name and value
-                    names.append(sline[0])
-                    if (analysis[0] == '.ac') & (len(sline) == 5):
-                        values.append(float(sline[3]) * (np.cos(float(sline[4]) * pi / 180) + np.sin(float(sline[4]) * pi / 180) * 1j))
-                    else:
-                        values.append(float(sline[3]))
-                    nodes.append([N1, N2])
+            # independent voltage sources
+            elif sline[0][0].upper() == 'V':  # independent voltage sources
+                # add name and value
+                names.append(sline[0])
+                if (analysis[0] == '.ac') & (len(sline) == 5):
+                    values.append(float(sline[3]) * (
+                    np.cos(float(sline[4]) * pi / 180) + np.sin(float(sline[4]) * pi / 180) * 1j))
+                else:
+                    values.append(float(sline[3]))
+                node_labels.append(sline[1:3])
 
-                    # update counter
-                    Nn = max([N1, N2, Nn])
+        # reordering nodes
+        unique_names, ii = np.unique(node_labels, return_inverse=True)
+        if '0' not in unique_names:
+            raise ValueError("Error: the network does not include node '0'")
+
+        nodes = np.reshape(ii, (len(node_labels),2))
+        # link name-2-number
+        node_labels2num = {}
+        for k , label in enumerate(np.unique(node_labels)):
+            node_labels2num[label] = k
+
+        Nn = nodes.max()
 
         # return network structure
-        return names, values, IC, nodes, Nn, analysis, plot_cmd
+        return names, values, IC, nodes, node_labels2num, Nn, analysis, plot_cmd
 
     def incidence_matrix(self):
         """
@@ -655,7 +694,9 @@ class Network:
                     else:
                         v[k,...] = self.x[nodes[0], ...]
                 else:
-                    nodes = [int(k) - 1 for k in variable.split(',') if k != '0']
+                    node_labels = variable.split(',')
+                    node_number = [self.node_label2num[k] for k in node_labels]
+                    nodes = [int(k) - 1 for k in node_number if k != 0]
                     if len(nodes) == 2:
                         v[k,...] = self.x[nodes[0], ...] - self.x[nodes[1], ...]
                     else:
@@ -669,13 +710,15 @@ class Network:
 
             # initialize output
             if self.analysis[0].lower() == '.tran':
-                v = np.zeros((len(arg), self.t.size))
+                v = np.zeros((len(arg), self.t.size), dtype=self.x.dtype)
             else:
-                v = np.zeros(len(arg))
+                v = np.zeros(len(arg), dtype=self.x.dtype)
 
             # cycle on voltages
-            for k, index in enumerate(arg):
-                nodes = [n - 1 for n in index if n != 0]
+            for k, node_labels in enumerate(arg):
+                node_number = [self.node_label2num[str(k)] for k in node_labels]
+                nodes = [int(k) - 1 for k in node_number if k != 0]
+
                 if len(nodes) == 2:
                     v[k, ...] = self.x[nodes[0], ...] - self.x[nodes[1], ...]
                 else:
