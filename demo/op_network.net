@@ -1,8 +1,9 @@
+* Example of operating point analysis
 V1 1 0 10
 R1 2 1 2 
 R2 2 0 2 
-C3 2 3 200e-6
+C3 2 3 200e-6 ; capacitors are considered as open circuits
 R4 2 3 10
 I5 3 2 2
-L4 3 0 1e-3
+L4 3 0 1e-3  ; capacitors are considered as short circuits
 .op
