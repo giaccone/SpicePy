@@ -668,7 +668,7 @@ class Network:
 
         if isinstance(arg, str):    # in the input is a string
             # make all uppercase and split
-            arg = arg.upper()
+            arg = arg
             voltage_list = arg.split()
 
             # initialize output
