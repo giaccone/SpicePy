@@ -31,6 +31,7 @@ class Network:
         * self.names: component names
         * self.values: component values
         * self.IC: initial conditions for dynamic components (stored as dict)
+        * self.source_type: type of transient sources (stored as dict)
         * self.nodes: component nodes (only two-port right now)
         * self.node_label2num: dictionary to convert node-labels to local node-number
         * self.node_num: number of nodes in the network
@@ -75,7 +76,10 @@ class Network:
         msg += '    SpicePy.Network:\n'
         msg += '------------------------\n'
         for ele, nodes, val in zip(self.names, self.nodes, self.values):
-            if np.iscomplex(val):
+            if isinstance(val, list):
+                fmt = "{} {} {} {}(" + "{} "* (len(val) -1) + "{})\n"
+                msg += fmt.format(ele, num2node_label[nodes[0]], num2node_label[nodes[1]], self.source_type[ele], *val )
+            elif np.iscomplex(val):
                 msg += "{} {} {} {} {}\n".format(ele, num2node_label[nodes[0]], num2node_label[nodes[1]], np.abs(val), np.angle(val) * 180/np.pi)
             elif ele[0].upper() == 'C' or ele[0].upper() == 'L':
                 if ele in self.IC:
@@ -109,6 +113,7 @@ class Network:
         (self.names,
          self.values,
          self.IC,
+         self.source_type,
          self.nodes,
          self.node_label2num,
          self.node_num,
@@ -148,10 +153,11 @@ class Network:
         values = []
         node_labels = []
         IC = {}
+        source_type = {}
         plot_cmd = None
         analysis = None
 
-        # initial letter of alla available components
+        # initial letter of all available components
         initials = ['V', 'I', 'R', 'C', 'L']
         components = []
 
@@ -188,16 +194,38 @@ class Network:
 
                         else:    # save analysis type
                             # split into a list
-                            sline = line.split()
-                            analysis = sline
+                            analysis = line.split()
 
                 else:
                     pass
 
         # cycle on component list
         for line in components:
-            # split into a list
-            sline = line.split()
+
+            # look for transient sources (if analysis is .tran)
+            if analysis[0] == '.tran':
+                # loop on all possible transient sources
+                time_sources = ['pwl', 'pulse', 'sin', 'exp']
+                for source in time_sources:
+                    # when one is found
+                    if source in line.lower():
+                        # get index of the releted string
+                        index = line.lower().index(source)
+                        # split before the transient source
+                        sline = line[:index].split()
+                        # remove '(' and ')' after and split
+                        param = line[index:].replace('(',' ').replace(')',' ').split()
+                        # append transuent-source name
+                        sline.append(param[0])
+                        # append parameters
+                        sline.append(param[1:])
+                        break
+                else:
+                    # split into a list is not a transient sources
+                    sline = line.split()
+            else:
+                # split into a list
+                sline = line.split()
 
             # detect element type
             if sline[0][0].upper() == 'R':  # resistance
@@ -247,6 +275,9 @@ class Network:
                 if (analysis[0] == '.ac') & (len(sline) == 5):
                     values.append(float(sline[3]) * (
                     np.cos(float(sline[4]) * pi / 180) + np.sin(float(sline[4]) * pi / 180) * 1j))
+                elif analysis[0] == '.tran':
+                    values.append([float(k) for k in sline[-1]])
+                    source_type[sline[0]] = sline[-2]
                 else:
                     values.append(float(sline[3]))
                 node_labels.append(sline[1:3])
@@ -258,6 +289,9 @@ class Network:
                 if (analysis[0] == '.ac') & (len(sline) == 5):
                     values.append(float(sline[3]) * (
                     np.cos(float(sline[4]) * pi / 180) + np.sin(float(sline[4]) * pi / 180) * 1j))
+                elif analysis[0] == '.tran':
+                    values.append([float(k) for k in sline[-1]])
+                    source_type[sline[0]] = sline[-2]
                 else:
                     values.append(float(sline[3]))
                 node_labels.append(sline[1:3])
@@ -276,7 +310,7 @@ class Network:
         Nn = nodes.max()
 
         # return network structure
-        return names, values, IC, nodes, node_labels2num, Nn, analysis, plot_cmd
+        return names, values, IC, source_type, nodes, node_labels2num, Nn, analysis, plot_cmd
 
     def incidence_matrix(self):
         """
