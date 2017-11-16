@@ -1,5 +1,19 @@
+# ===========================================================
+# About the code
+# ===========================================================
+# This code is part of the project 'SpicePy'.
+# See README.md for more details
+#
+# Licensed under the MIT license (see LICENCE)
+# Copyright (c) 2017 Luca Giaccone (luca.giaccone@polito.it)
+# ===========================================================
+
+# ==================
+# imported modules
+# ==================
 from scipy.sparse.linalg import spsolve
 import numpy as np
+import transient_sources as tsr
 
 
 def dc_solve(net):
@@ -58,11 +72,21 @@ def transient_solve(net):
     nv = 1  # get max IDnumber for voltage sources
     for iv in indexV:
         Vnum = int(net.names[iv][1:])
+
+        if isinstance(net.values[iv],list):
+            tsr_fun = getattr(tsr, net.source_type[net.names[iv]])
+            net_op.values[iv] = tsr_fun(*net.values[iv], t=0)
+
         if Vnum >= nv:
             nv = Vnum + 1
     ni = 1  # get max IDnumber for current sources
     for ii in indexI:
         Inum = int(net.names[ii][1:])
+
+        if isinstance(net.values[ii],list):
+            tsr_fun = getattr(tsr, net.source_type[net.names[ii]])
+            net_op.values[ii] = tsr_fun(*net.values[ii], t=0)
+
         if Inum >= ni:
             ni = Inum + 1
 
@@ -99,7 +123,7 @@ def transient_solve(net):
     # build required matrices
     net.conductance_matrix()
     net.dynamic_matrix()
-    net.rhs_matrix()
+    rhs_fun = net.rhs_matrix()
 
     # initialize solution space
     net.x = np.zeros((net.G.shape[0], net.t.size))
@@ -113,7 +137,7 @@ def transient_solve(net):
     # Solution (Integration using trepezoidal rule. Ref: Vlach, eq 9.4.6, pag. 277)
     K = net.C + 0.5 * h * net.G
     for k in range(1, net.t.size):
-        rhs = (net.C - 0.5 * h * net.G) * net.x[:, k - 1] + 0.5 * h * (2 * net.rhs)
+        rhs = (net.C - 0.5 * h * net.G) * net.x[:, k - 1] + 0.5 * h * (rhs_fun(net.t[k - 1]) + rhs_fun(net.t[k]))
         net.x[:, k] = spsolve(K, rhs)
 
 

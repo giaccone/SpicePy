@@ -1,3 +1,16 @@
+# ===========================================================
+# About the code
+# ===========================================================
+# This code is part of the project 'SpicePy'.
+# See README.md for more details
+#
+# Licensed under the MIT license (see LICENCE)
+# Copyright (c) 2017 Luca Giaccone (luca.giaccone@polito.it)
+# ===========================================================
+
+# ==================
+# imported modules
+# ==================
 import numpy as np
 from scipy.interpolate import interp1d
 
@@ -77,7 +90,7 @@ def pulse(V1, V2, Td=0, Tr=None, Tf=None, Pw=None, Period=None, t=None):
             Period = t[-1] - Td
 
     # get number of finite periods
-    N = np.ceil((t[-1] - Td) / Period)
+    N = np.ceil((t[-1] - Td) / Period) + 1
 
 
     # initialize pairs (with or without delay)

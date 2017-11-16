@@ -14,6 +14,7 @@
 # ==================
 from scipy.sparse import csr_matrix
 import numpy as np
+import transient_sources as tsr
 
 # ==================
 # constants
@@ -76,24 +77,33 @@ class Network:
         msg += '    SpicePy.Network:\n'
         msg += '------------------------\n'
         for ele, nodes, val in zip(self.names, self.nodes, self.values):
+            # if val is a list --> ele is a transient source
             if isinstance(val, list):
                 fmt = "{} {} {} {}(" + "{} "* (len(val) -1) + "{})\n"
                 msg += fmt.format(ele, num2node_label[nodes[0]], num2node_label[nodes[1]], self.source_type[ele], *val )
+            # if val is complex --> ele is a phasor
             elif np.iscomplex(val):
                 msg += "{} {} {} {} {}\n".format(ele, num2node_label[nodes[0]], num2node_label[nodes[1]], np.abs(val), np.angle(val) * 180/np.pi)
+            # if ele is C or L
             elif ele[0].upper() == 'C' or ele[0].upper() == 'L':
+                # check if an i.c. is present and print it
                 if ele in self.IC:
                     msg += "{} {} {} {} ic={}\n".format(ele, num2node_label[nodes[0]], num2node_label[nodes[1]], val, self.IC[ele])
+                # otherwise...
                 else:
                     msg += "{} {} {} {}\n".format(ele, num2node_label[nodes[0]], num2node_label[nodes[1]], val)
+            # otherwise...general case -->  ele n+ n- val
             else:
                 msg += "{} {} {} {}\n".format(ele, num2node_label[nodes[0]], num2node_label[nodes[1]], val)
 
+        # add analysis
         msg += " ".join(self.analysis) + '\n'
 
+        # if a plot command is present, add it
         if self.plot_cmd is not None:
             msg += self.plot_cmd + '\n'
 
+        # add number of nodes (reference node is included) and number of branches
         msg += '------------------------\n'
         msg += '* number of nodes {}\n'.format(self.node_num + 1)
         msg += '* number of branches {}\n'.format(len(self.names))
@@ -140,9 +150,13 @@ class Network:
         :return:
             * names: element names
             * values: element values
+            * IC: initial conditions
+            * source_type: type of transient source
             * nodes: element nodes
+            * node_labels2num: dictionary to convert node-labels to local node-number
             * Nn: number of nodes in the netlist
             * analysis: type of analysis
+            * plot_cmd: plot command
         """
 
         # initialize counter for number of nodes
@@ -161,7 +175,9 @@ class Network:
         initials = ['V', 'I', 'R', 'C', 'L']
         components = []
 
-        # get the analysis type
+        # 1) get the analysis type
+        # 2) catch plot command (if any)
+        # 3) filter out comments
         with open(filename) as f:
             # cycle on lines
             for b, line in enumerate(f):
@@ -209,20 +225,23 @@ class Network:
                 for source in time_sources:
                     # when one is found
                     if source in line.lower():
-                        # get index of the releted string
+                        # get index of the related string
                         index = line.lower().index(source)
-                        # split before the transient source
+                        # split string before its name
                         sline = line[:index].split()
-                        # remove '(' and ')' after and split
+                        # 1) remove '(' and ')' in the string after its name 2) and split
                         param = line[index:].replace('(',' ').replace(')',' ').split()
-                        # append transuent-source name
+                        # append transient-source name
                         sline.append(param[0])
                         # append parameters
                         sline.append(param[1:])
                         break
+                # if component is not a transient source, catch it normally
                 else:
-                    # split into a list is not a transient sources
+                    # split into a list
                     sline = line.split()
+
+            # if not '.tran', catch them all normally
             else:
                 # split into a list
                 sline = line.split()
@@ -236,18 +255,23 @@ class Network:
 
             # inductor
             elif sline[0][0].upper() == 'L':
-                # add name and value
+                # add name, value and nodes
                 names.append(sline[0])
                 values.append(float(sline[3]))
                 node_labels.append(sline[1:3])
 
+                # for '.tran'
                 if analysis[0] == '.tran':
+                    # check presence of i.c.
                     if len(sline) == 5:
                         if sline[4].lower().find('ic') != -1:
                             IC[sline[0]] = float(sline[4].split('=')[1])
                         else:
-                            IC[sline[0]] = 'Please check this --> ' + sline[-1]
-                            print("Warning: wrong definition of IC for {} --> ".format(sline[0]) + IC[sline[0]])
+                            #IC[sline[0]] = 'Please check this --> ' + sline[-1]
+                            # print("Warning: wrong definition of IC for {} --> ".format(sline[0]) + IC[sline[0]])
+                            raise ValueError("Warning: wrong definition of IC for {} --> ".format(sline[0]) + IC[sline[0]])
+
+                    # add ic=0 if i.c. non provided by the user
                     else:
                         IC[sline[0]] = 0
 
@@ -263,38 +287,59 @@ class Network:
                         if sline[4].lower().find('ic') != -1:
                             IC[sline[0]] = float(sline[4].split('=')[1])
                         else:
-                            IC[sline[0]] = 'Please check this --> ' + sline[-1]
-                            print("Warning: wrong definition of IC for {} --> ".format(sline[0]) + IC[sline[0]])
+                            #IC[sline[0]] = 'Please check this --> ' + sline[-1]
+                            #print("Warning: wrong definition of IC for {} --> ".format(sline[0]) + IC[sline[0]])
+                            raise ValueError("Warning: wrong definition of IC for {} --> ".format(sline[0]) + IC[sline[0]])
+
+                    # add ic=0 if i.c. non provided by the user
                     else:
                         IC[sline[0]] = 0
 
             # independent current source
             elif sline[0][0].upper() == 'I':
-                # add name and value
+                # add name and nodes
                 names.append(sline[0])
-                if (analysis[0] == '.ac') & (len(sline) == 5):
-                    values.append(float(sline[3]) * (
-                    np.cos(float(sline[4]) * pi / 180) + np.sin(float(sline[4]) * pi / 180) * 1j))
-                elif analysis[0] == '.tran':
-                    values.append([float(k) for k in sline[-1]])
-                    source_type[sline[0]] = sline[-2]
-                else:
-                    values.append(float(sline[3]))
                 node_labels.append(sline[1:3])
 
-            # independent voltage sources
-            elif sline[0][0].upper() == 'V':  # independent voltage sources
-                # add name and value
-                names.append(sline[0])
+                # if '.ac' and phase is present:
                 if (analysis[0] == '.ac') & (len(sline) == 5):
                     values.append(float(sline[3]) * (
                     np.cos(float(sline[4]) * pi / 180) + np.sin(float(sline[4]) * pi / 180) * 1j))
+                # if '.tran' ...
                 elif analysis[0] == '.tran':
-                    values.append([float(k) for k in sline[-1]])
-                    source_type[sline[0]] = sline[-2]
+                    # if is a transient source
+                    if isinstance(sline[-1], list):
+                        values.append([float(k) for k in sline[-1]])
+                        source_type[sline[0]] = sline[-2]
+                    # otherwise...
+                    else:
+                        values.append(float(sline[3]))
+                # otherwise...
                 else:
                     values.append(float(sline[3]))
+
+            # independent voltage sources
+            elif sline[0][0].upper() == 'V':
+                # add name and nodes
+                names.append(sline[0])
                 node_labels.append(sline[1:3])
+
+                # if '.ac' and phase is present:
+                if (analysis[0] == '.ac') & (len(sline) == 5):
+                    values.append(float(sline[3]) * (
+                    np.cos(float(sline[4]) * pi / 180) + np.sin(float(sline[4]) * pi / 180) * 1j))
+                # if '.tran'
+                elif analysis[0] == '.tran':
+                    # if is a transient source
+                    if isinstance(sline[-1], list):
+                        values.append([float(k) for k in sline[-1]])
+                        source_type[sline[0]] = sline[-2]
+                    # otherwise...
+                    else:
+                        values.append(float(sline[3]))
+                # otherwise...
+                else:
+                    values.append(float(sline[3]))
 
         # reordering nodes
         unique_names, ii = np.unique(node_labels, return_inverse=True)
@@ -575,38 +620,97 @@ class Network:
         if self.isort is None:
             self.reorder()
 
-        # initialize rhs
-        rhs = [0] * (self.node_num + len(self.isort[1]) + len(self.isort[3]))
+        if self.analysis[0] == '.tran':
+            def fun(t):
+                # initialize rhs
+                rhs = [0] * (self.node_num + len(self.isort[1]) + len(self.isort[3]))
 
-        # get index
-        NL = len(self.isort[1])
-        indexV = sorted(self.isort[3])
-        indexI = self.isort[4]
+                # get index
+                NL = len(self.isort[1])
+                indexV = sorted(self.isort[3])
+                indexI = self.isort[4]
 
-        # cycle on independent voltage sources
-        for k, iv in enumerate(indexV):
-            # update rhs
-            rhs[self.node_num + NL + k] += self.values[iv]
+                # cycle on independent voltage sources
+                for k, iv in enumerate(indexV):
+                    if isinstance(self.values[iv], list):
+                        tsr_fun = getattr(tsr, self.source_type[self.names[iv]])
+                        rhs[self.node_num + NL + k] += tsr_fun(*self.values[iv], t=t)
+                    else:
+                        # update rhs
+                        rhs[self.node_num + NL + k] += self.values[iv]
 
-        # cycle on independent current sources
-        for ii in indexI:
-            # get nodes
-            N1, N2 = self.nodes[ii]
+                # cycle on independent current sources
+                for ii in indexI:
+                    # get nodes
+                    N1, N2 = self.nodes[ii]
 
-            if N1 == 0:
+                    if isinstance(self.values[ii], list):
+                        tsr_fun = getattr(tsr, self.source_type[self.names[ii]])
+                        if N1 == 0:
+                            # update rhs
+                            rhs[N2 - 1] += tsr_fun(*self.values[ii], t=t)
+
+                        elif N2 == 0:
+                            # update rhs
+                            rhs[N1 - 1] -= tsr_fun(*self.values[ii], t=t)
+
+                        else:
+                            # update rhs
+                            rhs[N1 - 1] -= tsr_fun(*self.values[ii], t=t)
+                            rhs[N2 - 1] += tsr_fun(*self.values[ii], t=t)
+
+                    else:
+                        if N1 == 0:
+                            # update rhs
+                            rhs[N2 - 1] += self.values[ii]
+
+                        elif N2 == 0:
+                            # update rhs
+                            rhs[N1 - 1] -= self.values[ii]
+
+                        else:
+                            # update rhs
+                            rhs[N1 - 1] -= self.values[ii]
+                            rhs[N2 - 1] += self.values[ii]
+
+                return np.array(rhs)
+
+            return fun
+
+        else:
+
+            # initialize rhs
+            rhs = [0] * (self.node_num + len(self.isort[1]) + len(self.isort[3]))
+
+            # get index
+            NL = len(self.isort[1])
+            indexV = sorted(self.isort[3])
+            indexI = self.isort[4]
+
+            # cycle on independent voltage sources
+            for k, iv in enumerate(indexV):
                 # update rhs
-                rhs[N2 - 1] += self.values[ii]
+                rhs[self.node_num + NL + k] += self.values[iv]
 
-            elif N2 == 0:
-                # update rhs
-                rhs[N1 - 1] -= self.values[ii]
+            # cycle on independent current sources
+            for ii in indexI:
+                # get nodes
+                N1, N2 = self.nodes[ii]
 
-            else:
-                # update rhs
-                rhs[N1 - 1] -= self.values[ii]
-                rhs[N2 - 1] += self.values[ii]
+                if N1 == 0:
+                    # update rhs
+                    rhs[N2 - 1] += self.values[ii]
 
-        self.rhs = np.array(rhs)
+                elif N2 == 0:
+                    # update rhs
+                    rhs[N1 - 1] -= self.values[ii]
+
+                else:
+                    # update rhs
+                    rhs[N1 - 1] -= self.values[ii]
+                    rhs[N2 - 1] += self.values[ii]
+
+            self.rhs = np.array(rhs)
 
     def branch_voltage(self):
         """
@@ -832,7 +936,11 @@ class Network:
 
             elif (variable[0] == 'I'):
                 id = self.names.index(variable)
-                i[k, ...] = self.values[id]
+                if isinstance(self.values[id], list):
+                    tsr_fun = getattr(tsr, self.source_type[self.names[id]])
+                    i[k, ...] = tsr_fun(*self.values[id], self.t)
+                else:
+                    i[k, ...] = self.values[id]
 
 
         # remove one dimension for single voltage in .tran
@@ -1189,7 +1297,7 @@ class Network:
             # cycle on variables
             for k, variable in enumerate(plot_list):
                 if variable[0] == 'V':
-                    remove_char = ('V','(',')')
+                    remove_char = ('V(',')')
 
                     for char in remove_char:
                         variable = variable.replace(char, '')
@@ -1202,7 +1310,7 @@ class Network:
 
 
                 elif variable[0] == 'I':
-                    remove_char = ('I', '(', ')')
+                    remove_char = ('I(', ')')
 
                     for char in remove_char:
                         variable = variable.replace(char, '')
