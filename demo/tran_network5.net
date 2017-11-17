@@ -1,0 +1,7 @@
+* Example of PULSE sources
+I1 0 1 pulse(-5 5 0 1e-5 1e-5 2.5e-3 5e-3)
+R1 1 0 2
+L1 1 0 1e-3
+.tran 1e-5 15e-3
+.plot i(I1) i(L1)
+.end
