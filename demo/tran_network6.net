@@ -1,4 +1,4 @@
-* Example of SIN sources
+* Example of SIN source
 V1 1 0 sin(0 325 50 0 0 -18)
 R1 1 2 25e-3
 L1 2 0 1e-3

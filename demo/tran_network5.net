@@ -1,4 +1,4 @@
-* Example of PULSE sources
+* Example of PULSE source
 I1 0 1 pulse(-5 5 0 1e-5 1e-5 2.5e-3 5e-3)
 R1 1 0 2
 L1 1 0 1e-3
