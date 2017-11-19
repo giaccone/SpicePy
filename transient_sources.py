@@ -48,8 +48,8 @@ def pulse(V1, V2, Td=0, Tr=None, Tf=None, Pw=None, Period=None, t=None):
         * Td + Tr + Pw < t < Td + Tr + Pw + Tf ==>  linear ramp from V2 to V1
         * Td + Tr + Pw + Tf < t < (Period - Td + Tr + Pw + Tf) ==> V2
 
-    :param V1: low value (V)
-    :param V2: high value (V)
+    :param V1: low value
+    :param V2: high value
     :param Td: delay time (s)
     :param Tr: rise time (s)
     :param Tf: fall time (s)
@@ -138,8 +138,8 @@ def sin(Vo, Va, Freq=None, Td=0, Df=0, Phase=0, t=None):
         * t < Td ==> Vo + Va * np.sin(Phase * (np.pi / 180))
         * t > Td ==> Vo + Va * np.sin(2 * np.pi * Freq * (t - Td) + Phase * (np.pi / 180)) * np.exp(-(t - Td) * Df)
 
-    :param Vo: offset voltage (V)
-    :param Va: amplitude (peak) of the voltage (V)
+    :param Vo: offset
+    :param Va: amplitude (peak) of the waveform
     :param Freq: frequency (Hz)
     :param Td: delay time (s)
     :param Df: damping factor (1/s)
@@ -180,8 +180,8 @@ def exp(V1, V2, Td1=0, tau1=None, Td2=None, tau2=None, t=None):
         * t > Td2 ==> from V2 to V1 with exponential decay (time constant tau2)
         (if V(Td2) < V2 the exponential decay is from V(Td2) to V1)
 
-    :param V1: initial voltage (V)
-    :param V2: peak voltage (V)
+    :param V1: initial value
+    :param V2: peak
     :param Td1: rise time delay (s)
     :param tau1: rise time constant (s)
     :param Td2: fall time delay (s)
