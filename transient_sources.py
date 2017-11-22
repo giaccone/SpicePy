@@ -24,6 +24,14 @@ def pwl(pairs, t):
     :return: the function values at times defined in t
     """
 
+    # convert pairs to np.array is necessary
+    if isinstance(pairs, list):
+        pairs = np.array(pairs)
+
+    # check pairs format
+    if pairs.ndim == 1:
+        pairs.shape = (-1,2)
+
     # get pairs
     x = []
     y = []

@@ -79,8 +79,12 @@ class Network:
         for ele, nodes, val in zip(self.names, self.nodes, self.values):
             # if val is a list --> ele is a transient source
             if isinstance(val, list):
-                fmt = "{} {} {} {}(" + "{} "* (len(val) -1) + "{})\n"
-                msg += fmt.format(ele, num2node_label[nodes[0]], num2node_label[nodes[1]], self.source_type[ele], *val )
+                if self.source_type[ele] == 'pwl':
+                    fmt = "{} {} {} {}(" + "{} " * (len(val[0]) - 1) + "{})\n"
+                    msg += fmt.format(ele, num2node_label[nodes[0]], num2node_label[nodes[1]], self.source_type[ele], *val[0])
+                else:
+                    fmt = "{} {} {} {}(" + "{} " * (len(val) - 1) + "{})\n"
+                    msg += fmt.format(ele, num2node_label[nodes[0]], num2node_label[nodes[1]], self.source_type[ele], *val)
             # if val is complex --> ele is a phasor
             elif np.iscomplex(val):
                 msg += "{} {} {} {} {}\n".format(ele, num2node_label[nodes[0]], num2node_label[nodes[1]], np.abs(val), np.angle(val) * 180/np.pi)
@@ -309,8 +313,11 @@ class Network:
                 elif analysis[0] == '.tran':
                     # if is a transient source
                     if isinstance(sline[-1], list):
-                        values.append([float(k) for k in sline[-1]])
                         source_type[sline[0]] = sline[-2]
+                        if source_type[sline[0]] == 'pwl':
+                            values.append([[float(k) for k in sline[-1]]])
+                        else:
+                            values.append([float(k) for k in sline[-1]])
                     # otherwise...
                     else:
                         values.append(float(sline[3]))
@@ -332,8 +339,11 @@ class Network:
                 elif analysis[0] == '.tran':
                     # if is a transient source
                     if isinstance(sline[-1], list):
-                        values.append([float(k) for k in sline[-1]])
                         source_type[sline[0]] = sline[-2]
+                        if source_type[sline[0]] == 'pwl':
+                            values.append([[float(k) for k in sline[-1]]])
+                        else:
+                            values.append([float(k) for k in sline[-1]])
                     # otherwise...
                     else:
                         values.append(float(sline[3]))
