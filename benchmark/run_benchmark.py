@@ -98,12 +98,22 @@ ref = np.interp(net.t, ref[:,0],ref[:,1])
 rms = np.sqrt(np.sum((ref - val) ** 2)) / ref.size / np.abs(ref).max()
 check(rms, 1e-5)
 
-# tran network6
+# tran network7
 print(' * Testing TRAN network6 ...', end=' ',flush=True)
 net = ntl.Network('../demo/tran_network6.net')
 net_solve(net)
-val = net.get_current('L1')
+val = net.get_voltage('C1')
 ref = np.loadtxt('./tran_network6/solution.txt', skiprows=1)
+ref = np.interp(net.t, ref[:,0],ref[:,1])
+rms = np.sqrt(np.sum((ref - val) ** 2)) / ref.size / np.abs(ref).max()
+check(rms, 1e-5)
+
+# tran network6
+print(' * Testing TRAN network7 ...', end=' ',flush=True)
+net = ntl.Network('../demo/tran_network7.net')
+net_solve(net)
+val = net.get_current('L1')
+ref = np.loadtxt('./tran_network7/solution.txt', skiprows=1)
 ref = np.interp(net.t, ref[:,0],ref[:,1])
 rms = np.sqrt(np.sum((ref - val) ** 2)) / ref.size / np.abs(ref).max()
 check(rms, 1e-5)

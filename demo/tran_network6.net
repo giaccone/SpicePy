@@ -1,0 +1,7 @@
+* Example of pulse source
+V1 A 0 pulse(-1 1 0 0.005e-6 0.005e-6 10e-6 20e-6)
+R1 A B 500e-3
+L1 B C 1e-6
+C1 C 0 25.33e-9
+.tran 0.005e-6 30e-6
+.plot v(A) v(C)
