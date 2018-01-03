@@ -855,6 +855,8 @@ class Network:
             # initialize output
             if self.analysis[0].lower() == '.tran':
                 v = np.zeros((len(voltage_list), self.t.size), dtype=self.x.dtype)
+            elif (self.analysis[0].lower() == '.ac') & (not np.isscalar(self.f)):
+                v = np.zeros((len(voltage_list), self.f.size), dtype=self.x.dtype)
             else:
                 v = np.zeros(len(voltage_list), dtype=self.x.dtype)
 
@@ -883,7 +885,7 @@ class Network:
                     else:
                         v[k,...] = self.x[nodes[0], ...]
 
-        else: # in the input is a node-pair list
+        else:  # if the input is a node-pair list
 
             # check is a single node-pair is given
             if not isinstance(arg[0], list):
@@ -904,7 +906,6 @@ class Network:
                     v[k, ...] = self.x[nodes[0], ...] - self.x[nodes[1], ...]
                 else:
                     v[k, ...] = self.x[nodes[0], ...]
-
 
         # remove one dimension for single voltage in .tran
         if len(v.shape) == 2 and v.shape[0] == 1:
@@ -931,10 +932,11 @@ class Network:
             for index in arg:
                 current_list.append(self.names[index])
 
-
         # initialize output
         if self.analysis[0].lower() == '.tran':
             i = np.zeros((len(current_list), self.t.size), dtype=self.x.dtype)
+        elif (self.analysis[0].lower() == '.ac') & (not np.isscalar(self.f)):
+            i = np.zeros((len(current_list), self.f.size), dtype=self.x.dtype)
         else:
             i = np.zeros(len(current_list), dtype=self.x.dtype)
 
@@ -949,19 +951,31 @@ class Network:
             if variable not in self.names:
                 variable = self.names[int(variable)]
 
+            # resistor or capacitor
             if (variable[0] == 'R') or (variable[0] == 'C'):
 
+                # get voltage and index
                 v = self.get_voltage(variable)
                 id = self.names.index(variable)
-                if (variable[0] == 'R'):
+                # resistor
+                if variable[0] == 'R':
                     i[k, ...] = v / self.values[id]
-                elif (variable[0] == 'C'):
-                    from scipy.interpolate import CubicSpline
-                    cs = CubicSpline(self.t, v)
-                    csd = cs.derivative()
-                    i[k, ...] = self.values[id] * csd(self.t)
+                # capacitor
+                elif variable[0] == 'C':
+                    # time derivative for .tran
+                    if self.analysis[0].lower() == '.tran':
+                        from scipy.interpolate import CubicSpline
+                        cs = CubicSpline(self.t, v)
+                        csd = cs.derivative()
+                        i[k, ...] = self.values[id] * csd(self.t)
+                    # symbolic method in .ac
+                    elif self.analysis[0].lower() == '.ac':
+                        Xc = -1.0 / (2 * np.pi * self.f * self.values[id])
+                        i[k, ...] = v / (Xc * 1j)
+                    # .OP: do nothing --> ic already zero
 
-            elif (variable[0] == 'L'):
+            # inductor
+            elif variable[0] == 'L':
                 indexL = sorted(self.isort[1])
                 for h, il in enumerate(indexL):
                     if variable == self.names[il]:
@@ -969,7 +983,8 @@ class Network:
 
                 i[k, ...] = self.x[n, ...]
 
-            elif (variable[0] == 'V'):
+            # voltage generator
+            elif variable[0] == 'V':
                 indexV = sorted(self.isort[3])
                 for h, iv in enumerate(indexV):
                     if variable == self.names[iv]:
@@ -977,7 +992,8 @@ class Network:
 
                 i[k, ...] = self.x[n, ...]
 
-            elif (variable[0] == 'I'):
+            # current generator
+            elif variable[0] == 'I':
                 id = self.names.index(variable)
                 if isinstance(self.values[id], list):
                     tsr_fun = getattr(tsr, self.source_type[self.names[id]])
