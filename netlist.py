@@ -45,6 +45,7 @@ class Network:
         * self.rhs:
         * self.isort:
         * self.t:
+        * self.f:
         * self.x:
         * self.vb:
         * self.ib:
@@ -141,6 +142,7 @@ class Network:
         self.rhs = None
         self.isort = None
         self.t = None
+        self.f = None
         self.x = None
         self.vb = None
         self.ib = None
@@ -803,6 +805,34 @@ class Network:
             self.pb = self.vb * np.conj(self.ib)
         else:
             self.pb = self.vb * self.ib
+
+    def frequency_span(self):
+        """
+        "frequency_span" generates the frequency span for .ac analysys
+
+        :return:
+            * self.f: frequency array
+        """
+        if self.analysis[0].lower() != '.ac':
+            raise ValueError("frequency_span works only for .ac analyses")
+
+        if self.analysis[1].lower() == 'lin':
+            npt = float(self.analysis[2])
+            fs = float(self.analysis[3])
+            fe = float(self.analysis[4])
+            self.f = np.linspace(fs, fe, npt)
+
+        elif self.analysis[1].lower() == 'dec':
+            npt_d = float(self.analysis[2])
+            fs = np.log10(float(self.analysis[3]))
+            fe = np.log10(float(self.analysis[4]))
+            self.f = np.logspace(fs, fe, np.ceil(npt_d * (fe - fs)))
+
+        elif self.analysis[1].lower() == 'oct':
+            npt_d = float(self.analysis[2])
+            fs = np.log2(float(self.analysis[3]))
+            fe = np.log2(float(self.analysis[4]))
+            self.f = np.logspace(fs, fe, np.ceil(npt_d * (fe - fs)), base=2)
 
     def get_voltage(self, arg):
         """
