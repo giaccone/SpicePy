@@ -38,15 +38,19 @@ def ac_solve(net):
     :return:
     """
 
+    # matrix and frequency
     net.conductance_matrix()
     net.dynamic_matrix()
     net.rhs_matrix()
+    net.frequency_span()
 
-    # frequency
-    f = float(net.analysis[-1])
-
-    # linear system definition
-    net.x = spsolve(net.G + 1j * 2 * np.pi * f* net.C, net.rhs)
+    if np.isscalar(net.f) == 1:
+        # single frequency solution
+        net.x = spsolve(net.G + 1j * 2 * np.pi * net.f * net.C, net.rhs)
+    else:
+        net.x = np.zeros((net.G.shape[0], net.f.size), dtype=np.complex)
+        for k, f in enumerate(net.f):
+            net.x[:, k] = spsolve(net.G + 1j * 2 * np.pi * f * net.C, net.rhs)
 
 
 def transient_solve(net):
