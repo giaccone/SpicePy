@@ -38,6 +38,7 @@ class Network:
         * self.node_num: number of nodes in the network
         * self.analysis: type of analysis
         * self.plot_cmd: plot directive for transient analysis
+        * self.tf_cmd: transfer function definition (for .ac multi-freq)
     Other attributes (default is None):
         * self.A:
         * self.G:
@@ -108,6 +109,10 @@ class Network:
         if self.plot_cmd is not None:
             msg += self.plot_cmd + '\n'
 
+        # if a transfer function definition is present, add it
+        if self.tf_cmd is not None:
+            msg += self.tf_cmd + '\n'
+
         # add number of nodes (reference node is included) and number of branches
         msg += '------------------------\n'
         msg += '* number of nodes {}\n'.format(self.node_num + 1)
@@ -133,7 +138,8 @@ class Network:
          self.node_label2num,
          self.node_num,
          self.analysis,
-         self.plot_cmd) = self.read_netlist(filename)
+         self.plot_cmd,
+         self.tf_cmd) = self.read_netlist(filename)
 
         # initialization of other possible attributes
         self.A = None
@@ -208,11 +214,14 @@ class Network:
                         # remove carriage return
                         line = line.replace('\n', '')
 
-                        if (line.lower().find('.end') != -1):    # if .end is reached exit
+                        if line.lower().find('.end') != -1:    # if .end is reached exit
                             break
 
-                        elif (line.lower().find('.plot') != -1):    # if .plot is reached save it
+                        elif line.lower().find('.plot') != -1:    # if .plot is reached save it
                             plot_cmd = line
+
+                        elif line.lower().find('.tf') != -1:    # if .tf is reached save it
+                            tf_cmd = line
 
                         else:    # save analysis type
                             # split into a list
@@ -367,7 +376,7 @@ class Network:
         Nn = nodes.max()
 
         # return network structure
-        return names, values, IC, source_type, nodes, node_labels2num, Nn, analysis, plot_cmd
+        return names, values, IC, source_type, nodes, node_labels2num, Nn, analysis, plot_cmd, tf_cmd
 
     def incidence_matrix(self):
         """
