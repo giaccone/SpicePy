@@ -834,6 +834,9 @@ class Network:
             fe = np.log2(float(self.analysis[4]))
             self.f = np.logspace(fs, fe, np.ceil(npt_d * (fe - fs)), base=2)
 
+        if self.f.size == 1:
+            self.f = np.asscalar(self.f)
+
     def get_voltage(self, arg):
         """
         "get_voltage" computes a voltage across components of between nodes
