@@ -181,6 +181,7 @@ class Network:
         IC = {}
         source_type = {}
         plot_cmd = None
+        tf_cmd = None
         analysis = None
 
         # initial letter of all available components
@@ -1462,18 +1463,19 @@ class Network:
             import matplotlib.pyplot as plt
             fig, axs = plt.subplots(2, 1)
             plt.axes(axs[0])
-            plt.title(tf[0] + '/' + tf[1], fontsize=16)
+            plt.title('tf: ' + tf[0] + '/' + tf[1], fontsize=14)
             if decibel:
                 plt.semilogx(self.f, 20 * np.log10(np.abs(H)))
-                plt.ylabel('(dB)', fontsize=16)
+                plt.ylabel('magnitude (dB)', fontsize=14)
             else:
                 plt.semilogx(self.f, np.abs(H))
+                plt.ylabel('magnitude', fontsize=14)
             plt.grid()
 
             plt.axes(axs[1])
-            plt.semilogx(self.f, 20 * np.angle(H) * 180 / np.pi)
-            plt.xlabel('frequency (Hz)', fontsize=16)
-            plt.ylabel('(deg)', fontsize=16)
+            plt.semilogx(self.f, np.angle(H) * 180 / np.pi)
+            plt.xlabel('frequency (Hz)', fontsize=14)
+            plt.ylabel('phase (deg)', fontsize=14)
             plt.grid()
             plt.tight_layout()
 
