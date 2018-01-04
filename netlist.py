@@ -1418,3 +1418,85 @@ class Network:
                 hf.savefig(filename, dpi=dpi_value)
 
         return hf
+
+    def bode(self, decibel=False, to_file=False, filename=None, dpi_value=150):
+        """
+        bode print the bode diagram for the defined transfer functions (.ac multi-freq analysis only)
+
+        :param
+            * decibel: set to True to use decibel (default is False)
+            * to_file: set to True to save on file (default is False)
+            * filename: set the filename (default is bode_plot.png)
+            * dpi_value: set the dpi (default is 150)
+
+        :return:
+        """
+
+        # check if the analysis is '.ac'
+        if self.analysis[0].lower() != '.ac':
+            raise ValueError("bode() method available only for .ac analyses")
+        # check if is a multi-freq analysis
+        if np.isscalar(self.f):
+            raise ValueError("bode() method useful for multi-frequency analyses. Use plot() for single-frequency.")
+
+        # convert the N tf in a Nx2 array
+        tf_array = np.array(self.tf_cmd.upper().split()[1:]).reshape(-1,2)
+
+        # compute tf
+        hf = []
+        for tf in tf_array:
+            # output variable
+            if 'V(' in tf[0]:
+                out = self.get_voltage(tf[0].replace('V(','').replace(')',''))
+            elif 'I(' in tf[0]:
+                out = self.get_current(tf[0].replace('I(', '').replace(')', ''))
+            # input variable
+            if 'V(' in tf[1]:
+                input = self.get_voltage(tf[1].replace('V(','').replace(')',''))
+            elif 'I(' in tf[1]:
+                input = self.get_current(tf[1].replace('I(', '').replace(')', ''))
+            # tf
+            H = out / input
+
+            # plot
+            import matplotlib.pyplot as plt
+            fig, axs = plt.subplots(2, 1)
+            plt.axes(axs[0])
+            plt.title(tf[0] + '/' + tf[1], fontsize=16)
+            if decibel:
+                plt.semilogx(self.f, 20 * np.log10(np.abs(H)))
+                plt.ylabel('(dB)', fontsize=16)
+            else:
+                plt.semilogx(self.f, np.abs(H))
+            plt.grid()
+
+            plt.axes(axs[1])
+            plt.semilogx(self.f, 20 * np.angle(H) * 180 / np.pi)
+            plt.xlabel('frequency (Hz)', fontsize=16)
+            plt.ylabel('(deg)', fontsize=16)
+            plt.grid()
+            plt.tight_layout()
+
+            hf.append(fig)
+
+        # save to file
+        if to_file:
+            if filename is None:
+                filename = 'bode_plot.png'
+            else:
+                if filename[-4:].lower() != '.png':
+                    filename += '.png'
+
+            if len(hf) == 0:
+                pass
+            elif len(hf) == 1:
+                hf = hf[0]
+                hf.savefig(filename, dpi=dpi_value)
+            else:
+                for k, fig in enumerate(hf):
+                    fig.savefig(filename.replace('.png', '_' + str(k) + '.png'), dpi=dpi_value)
+        else:
+            if len(hf) == 1:
+                hf = hf[0]
+
+        return hf
