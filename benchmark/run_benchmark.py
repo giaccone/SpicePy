@@ -30,8 +30,8 @@ rms = np.sqrt(np.sum((ref - net.x) ** 2)) / ref.size
 check(rms, 1e-5)
 
 # AC network
-print(' * Testing AC network ...', end=' ',flush=True)
-net = ntl.Network('../demo/ac_network.net')
+print(' * Testing AC network (single frequency) ...', end=' ',flush=True)
+net = ntl.Network('../demo/ac_single_frequency.net')
 net_solve(net)
 ref = np.loadtxt('./ac_network/solution.txt')
 ref = ref[:,0] * np.exp(ref[:,1] * 1j * np.pi / 180)
