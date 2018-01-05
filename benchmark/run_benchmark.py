@@ -29,15 +29,43 @@ ref = np.loadtxt('./op_network/solution.txt')
 rms = np.sqrt(np.sum((ref - net.x) ** 2)) / ref.size
 check(rms, 1e-5)
 
-# AC network
+# AC network (single frequency)
 print(' * Testing AC network (single frequency) ...', end=' ',flush=True)
 net = ntl.Network('../demo/ac_single_frequency.net')
 net_solve(net)
-ref = np.loadtxt('./ac_network/solution.txt')
+ref = np.loadtxt('./ac_single_frequency/solution.txt')
 ref = ref[:,0] * np.exp(ref[:,1] * 1j * np.pi / 180)
 rms_r = np.sqrt(np.sum((ref.real - net.x.real) ** 2))
 rms_i = np.sqrt(np.sum((ref.imag - net.x.imag) ** 2))
 rms = np.sqrt(rms_r ** 2 + rms_i ** 2) / ref.size
+check(rms, 1e-5)
+
+# AC network (low-high pass filter)
+print(' * Testing AC network (low-high pass filter) ...', end=' ',flush=True)
+net = ntl.Network('../demo/ac_low_high_pass_filter.net')
+net_solve(net)
+ref = np.loadtxt('./ac_low_high_pass_filter/solution.txt')
+ref1 = 10 ** (ref[:,1]/20) * np.exp(ref[:,2] * 1j * np.pi / 180)
+ref2 = 10 ** (ref[:,3]/20) * np.exp(ref[:,4] * 1j * np.pi / 180)
+vc1 = net.get_voltage('C1')
+vr1 = net.get_voltage('R1')
+rms_r1 = np.sqrt(np.sum((ref1.real - vc1.real) ** 2))
+rms_i1 = np.sqrt(np.sum((ref1.imag - vc1.imag) ** 2))
+rms_r2 = np.sqrt(np.sum((ref2.real - vr1.real) ** 2))
+rms_i2 = np.sqrt(np.sum((ref2.imag - vr1.imag) ** 2))
+rms = np.sqrt(rms_r1 ** 2 + rms_i1 ** 2 + rms_r2 ** 2 + rms_i2 ** 2) / ref.shape[0]
+check(rms, 1e-5)
+
+# AC network (band pass filter)
+print(' * Testing AC network (band pass filter) ...', end=' ',flush=True)
+net = ntl.Network('../demo/ac_band_pass_filter.net')
+net_solve(net)
+ref = np.loadtxt('./ac_band_pass_filter/solution.txt')
+ref = 10 ** (ref[:,1]/20) * np.exp(ref[:,2] * 1j * np.pi / 180)
+vr1 = net.get_voltage('R1')
+rms_r = np.sqrt(np.sum((ref.real - vr1.real) ** 2))
+rms_i = np.sqrt(np.sum((ref.imag - vr1.imag) ** 2))
+rms = np.sqrt(rms_r1 ** 2 + rms_i1 ** 2) / ref.shape[0]
 check(rms, 1e-5)
 
 # tran network1
