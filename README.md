@@ -17,12 +17,12 @@ This document provides information about features and installation procedure. Fo
 3. done!
 
 ## Requirements
-At the time of writing (October 4, 2017), the project is based on:
+At the time of writing (January 6, 2018), the project is based on:
 
-* `Python 3.6.2`
+* `Python 3.6.4`
 * `numpy 1.13.1`
-* `scipy 0.19.1`
-* `matplotlib 2.0.2`
+* `scipy 1.0.0`
+* `matplotlib 2.1.1`
 
 This is not a frozen configuration. I'm use to update these packages as soon as an update is available.
 
@@ -31,6 +31,19 @@ Finally, SpicePy should work also with earlier version of Python (but **not** Py
 Last but not least, as many other Python tools a convenient method to handle SpicePy is `iPython`, a powerful interactive Python shell where Python can be used interactively.
 
 # Feature (and changelog)
+
+## January 6, 2018
+
+* support for ac-multi-frequency analysis
+* examples of ac-multi-frequency analysis
+
+(Check commit history for more details).
+
+## November 16, 2017
+
+* support for transient-sources
+
+(Check commit history for more details).
 
 ## October 2, 2017
 
