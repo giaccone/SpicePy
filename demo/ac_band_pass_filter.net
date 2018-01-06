@@ -7,7 +7,7 @@ R1 C 0 1e3
 * RC network with fc = 1/(2*pi*sqrt(L1*C1))= 5032.92 Hz
 
 * from 1 Hz to 200 Hz with 50 points per decade
-.ac dec 50 500 50000
+.ac dec 50 50 500000
 
 * V(R1)/V(V1) --> band pass filter
 .tf v(R1) v(V1) 

@@ -1,4 +1,4 @@
-* Example of operating AC analysis
+* Example of AC analysis
 V1 1 0 10
 R1 2 1 2 
 R2 2 0 2 
@@ -7,5 +7,6 @@ R4 2 3 10
 I5 3 2 2 90
 L4 3 0 1e-3
 
-* At the moment only single-frequency analysis are supported
+* the following command is used
+* for a single frequency analysis
 .ac lin 1 50 50
