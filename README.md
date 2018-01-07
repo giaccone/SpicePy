@@ -20,7 +20,7 @@ This document provides information about features and installation procedure. Fo
 At the time of writing (January 6, 2018), the project is based on:
 
 * `Python 3.6.4`
-* `numpy 1.13.1`
+* `numpy 1.13.3`
 * `scipy 1.0.0`
 * `matplotlib 2.1.1`
 
