@@ -986,20 +986,20 @@ class Network:
 
             # inductor
             elif variable[0] == 'L':
-                indexL = sorted(self.isort[1])
-                for h, il in enumerate(indexL):
-                    if variable == self.names[il]:
-                        n = self.node_num + h
-
+                # get sub-index of 'L'
+                h = sorted(self.isort[1]).index(self.names.index(variable))
+                # index of the related current in the solution
+                n = self.node_num + h
+                # get current
                 i[k, ...] = self.x[n, ...]
 
             # voltage generator
             elif variable[0] == 'V':
-                indexV = sorted(self.isort[3])
-                for h, iv in enumerate(indexV):
-                    if variable == self.names[iv]:
-                        n = self.node_num + len(self.isort[1]) + h
-
+                # get sub-index of 'V'
+                h = sorted(self.isort[3]).index(self.names.index(variable))
+                # index of the related current in the solution
+                n = self.node_num + len(self.isort[1]) + h
+                # get current
                 i[k, ...] = self.x[n, ...]
 
             # current generator
