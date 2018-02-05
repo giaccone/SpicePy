@@ -1438,7 +1438,7 @@ class Network:
             raise ValueError("bode() method available only for .ac analyses")
         # check if is a multi-freq analysis
         if np.isscalar(self.f):
-            raise ValueError("bode() method useful for multi-frequency analyses. Use plot() for single-frequency.")
+            raise ValueError("bode() method useful for multi-frequency analyses. Use print() for single-frequency.")
 
         # convert the N tf in a Nx2 array
         tf_array = np.array(self.tf_cmd.upper().split()[1:]).reshape(-1,2)
