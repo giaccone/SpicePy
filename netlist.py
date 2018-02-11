@@ -121,7 +121,6 @@ class Network:
 
         return msg
 
-
     def __init__(self, filename):
         """
         __init__ initializes common attributes using read_netlist method
@@ -181,12 +180,13 @@ class Network:
         node_labels = []
         IC = {}
         source_type = {}
+        control_source = {}
         plot_cmd = None
         tf_cmd = None
         analysis = None
 
         # initial letter of all available components
-        initials = ['V', 'I', 'R', 'C', 'L']
+        initials = ['V', 'I', 'R', 'C', 'L', 'E']
         components = []
 
         # 1) get the analysis type
@@ -367,6 +367,21 @@ class Network:
                 else:
                     values.append(float(self.convert_unit(sline[3])))
 
+            # voltage controlled voltage sources
+            elif sline[0][0].upper() == 'E':
+                # add name and nodes
+                names.append(sline[0])
+                node_labels.append(sline[1:3])
+                control_source[sline[0]] = sline[3:5]
+
+                # if '.ac' and phase is present:
+                if (analysis[0] == '.ac') & (len(sline) == 7):
+                    values.append(float(sline[5]) * (
+                            np.cos(float(sline[6]) * pi / 180) + np.sin(float(sline[6]) * pi / 180) * 1j))
+                # otherwise...
+                else:
+                    values.append(float(sline[5]))
+
         # reordering nodes
         unique_names, ii = np.unique(node_labels, return_inverse=True)
         if '0' not in unique_names:
@@ -381,7 +396,7 @@ class Network:
         Nn = nodes.max()
 
         # return network structure
-        return names, values, IC, source_type, nodes, node_labels2num, Nn, analysis, plot_cmd, tf_cmd
+        return names, values, IC, source_type, control_source, nodes, node_labels2num, Nn, analysis, plot_cmd, tf_cmd
 
     def convert_unit(self, string_value):
         """
