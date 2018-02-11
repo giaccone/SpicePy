@@ -87,6 +87,17 @@ class Network:
                 else:
                     fmt = "{} {} {} {}(" + "{} " * (len(val) - 1) + "{})\n"
                     msg += fmt.format(ele, num2node_label[nodes[0]], num2node_label[nodes[1]], self.source_type[ele], *val)
+            # controlled sources
+            elif ele[0].upper() == 'E':
+                if np.iscomplex(val):
+                    msg += "{} {} {} {} {} {} {}\n".format(ele, num2node_label[nodes[0]], num2node_label[nodes[1]],
+                                                         self.control_source[ele][0], self.control_source[ele][1],
+                                                         np.abs(val), np.angle(val) * 180 / np.pi)
+                else:
+                    msg += "{} {} {} {} {} {}\n".format(ele, num2node_label[nodes[0]], num2node_label[nodes[1]],
+                                                         self.control_source[ele][0],
+                                                         self.control_source[ele][1],
+                                                         val)
             # if val is complex --> ele is a phasor
             elif np.iscomplex(val):
                 msg += "{} {} {} {} {}\n".format(ele, num2node_label[nodes[0]], num2node_label[nodes[1]], np.abs(val), np.angle(val) * 180/np.pi)
