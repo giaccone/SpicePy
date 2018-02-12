@@ -889,6 +889,7 @@ class Network:
         ibranch = np.zeros_like(self.vb)
         cnt_l = 0
         cnt_v = 0
+        cnt_e = 0
         for k, (name, val, voltage) in enumerate(zip(self.names, self.values, self.vb)):
             if name[0].upper() == 'R':
                 ibranch[k, ...] = voltage / val
@@ -913,6 +914,9 @@ class Network:
                 cnt_v += 1
             elif name[0].upper() == 'I':
                 ibranch[k, ...] = val
+            elif name[0].upper() == 'E':
+                ibranch[k, ...] = self.x[self.node_num + len(self.isort[1]) + len(self.isort[3]) + cnt_e, ...]
+                cnt_e += 1
 
         self.ib = ibranch
 
@@ -1132,6 +1136,15 @@ class Network:
                     i[k, ...] = tsr_fun(*self.values[id], self.t)
                 else:
                     i[k, ...] = self.values[id]
+
+            # VCVS
+            elif variable[0] == 'E':
+                # get sub-index of 'E'
+                h = sorted(self.isort[5]).index(self.names.index(variable))
+                # index of the related current in the solution
+                n = self.node_num + len(self.isort[1]) + len(self.isort[3]) + h
+                # get current
+                i[k, ...] = self.x[n, ...]
 
 
         # remove one dimension for single voltage in .tran
