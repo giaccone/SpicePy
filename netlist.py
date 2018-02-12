@@ -479,6 +479,7 @@ class Network:
         indexR = self.isort[0]
         indexL = sorted(self.isort[1])
         indexV = sorted(self.isort[3])
+        indexE = sorted(self.isort[5])
 
         # cycle on resistances
         for ir in indexR:
@@ -611,6 +612,83 @@ class Network:
                 g_row.append(self.node_num + len(indexL) + k)
                 g_col.append(N2 - 1)
 
+
+        # cycle on VCVS
+        for k, ie in enumerate(indexE):
+            # get nodes
+            N1, N2 = self.nodes[ie]
+
+            # detect connection
+            if N1 == 0:  # if grounded to N1 ...
+                # negative terminal
+                g.append(-1)
+                g_row.append(N2 - 1)
+                g_col.append(self.node_num + len(indexL) + len(indexV) + k)
+
+                # negative terminal
+                g.append(-1)
+                g_row.append(self.node_num + len(indexL) + len(indexV) + k)
+                g_col.append(N2 - 1)
+
+            elif N2 == 0:  # if grounded to N2 ...
+                # positive terminal
+                g.append(1)
+                g_row.append(N1 - 1)
+                g_col.append(self.node_num + len(indexL) + len(indexV) + k)
+
+                # positive terminal
+                g.append(1)
+                g_row.append(self.node_num + len(indexL) + len(indexV) + k)
+                g_col.append(N1 - 1)
+
+            else:  # if not grounded ...
+                # positive terminal
+                g.append(1)
+                g_row.append(N1 - 1)
+                g_col.append(self.node_num + len(indexL) + len(indexV) + k)
+
+                # positive terminal
+                g.append(1)
+                g_row.append(self.node_num + len(indexL) + len(indexV) + k)
+                g_col.append(N1 - 1)
+
+                # negative terminal
+                g.append(-1)
+                g_row.append(N2 - 1)
+                g_col.append(self.node_num + len(indexL) + len(indexV) + k)
+
+                # negative terminal
+                g.append(-1)
+                g_row.append(self.node_num + len(indexL) + len(indexV) + k)
+                g_col.append(N2 - 1)
+
+            # get control nodes
+            N1, N2 = [self.node_label2num[k] for k in self.control_source[self.names[ie]]]
+
+            # detect connection
+            if N1 == 0:  # if grounded to N1 ...
+                # negative terminal
+                g.append(self.values[ie])
+                g_row.append(self.node_num + len(indexL) + len(indexV) + k)
+                g_col.append(N2 - 1)
+
+            elif N2 == 0:  # if grounded to N2 ...
+                # positive terminal
+                g.append(-self.values[ie])
+                g_row.append(self.node_num + len(indexL) + len(indexV) + k)
+                g_col.append(N1 - 1)
+
+            else:  # if not grounded ...
+                # positive terminal
+                g.append(-self.values[ie])
+                g_row.append(self.node_num + len(indexL) + len(indexV) + k)
+                g_col.append(N1 - 1)
+
+                # negative terminal
+                g.append(self.values[ie])
+                g_row.append(self.node_num + len(indexL) + len(indexV) + k)
+                g_col.append(N2 - 1)
+
         # create conductance matrix
         self.G = csr_matrix((g,(g_row,g_col)))
 
@@ -689,7 +767,7 @@ class Network:
         if self.analysis[0] == '.tran':
             def fun(t):
                 # initialize rhs
-                rhs = [0] * (self.node_num + len(self.isort[1]) + len(self.isort[3]))
+                rhs = [0] * (self.node_num + len(self.isort[1]) + len(self.isort[3]) + len(self.isort[5]))
 
                 # get index
                 NL = len(self.isort[1])
@@ -746,7 +824,7 @@ class Network:
         else:
 
             # initialize rhs
-            rhs = [0] * (self.node_num + len(self.isort[1]) + len(self.isort[3]))
+            rhs = [0] * (self.node_num + len(self.isort[1]) + len(self.isort[3]) + len(self.isort[5]))
 
             # get index
             NL = len(self.isort[1])
