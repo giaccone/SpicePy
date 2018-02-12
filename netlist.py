@@ -1065,7 +1065,7 @@ class Network:
 
     def reorder(self):
         """
-        'reorder' reorder the netlist. Order: R, L, C, V and I
+        'reorder' reorder the netlist. Order: R, L, C, V , I, E
         Elements of the same type are ordered in ascending order (eg. R1, R2, R3,...)
 
         :return:
@@ -1076,6 +1076,7 @@ class Network:
         icap = []
         ivolt = []
         icur = []
+        ivcvs = []
         for k,ele in enumerate(self.names):
             if ele[0].upper() == 'R':
                 ires.append([int(ele[1:]),k])
@@ -1087,6 +1088,8 @@ class Network:
                 ivolt.append([int(ele[1:]),k])
             elif ele[0].upper() == 'I':
                 icur.append([int(ele[1:]),k])
+            elif ele[0].upper() == 'E':
+                ivcvs.append([int(ele[1:]),k])
 
         self.isort = []
         self.isort.append([k for foo, k in sorted(ires)])
@@ -1094,6 +1097,7 @@ class Network:
         self.isort.append([k for foo, k in sorted(icap)])
         self.isort.append([k for foo, k in sorted(ivolt)])
         self.isort.append([k for foo, k in sorted(icur)])
+        self.isort.append([k for foo, k in sorted(ivcvs)])
 
     def print(self, variable='all', polar=False, message=False):
 
