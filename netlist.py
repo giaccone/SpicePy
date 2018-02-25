@@ -1054,12 +1054,12 @@ class Network:
     def print(self, variable='all', polar=False, message=False):
 
         # common formatter
-        voltage_fmt = 'v({}) = {:10.4f} V\n'
-        voltage_fmt_polar = 'v({}) = {:10.4f} V < {:10.4f}°\n'
-        current_fmt = 'i({}) = {:10.4f} A\n'
-        current_fmt_polar = 'i({}) = {:10.4f} A < {:10.4f}°\n'
-        power_fmt = 'p({}) = {:10.4f} {}\n'
-        power_fmt_polar = 'p({}) = {:10.4f} {} < {:10.4f}°\n'
+        voltage_fmt = 'v({}) = {:10.4g} V\n'
+        voltage_fmt_polar = 'v({}) = {:10.4g} V < {:10.4g}°\n'
+        current_fmt = 'i({}) = {:10.4g} A\n'
+        current_fmt_polar = 'i({}) = {:10.4g} A < {:10.4g}°\n'
+        power_fmt = 'p({}) = {:10.4g} {}\n'
+        power_fmt_polar = 'p({}) = {:10.4g} {} < {:10.4g}°\n'
         
         # if necessary reorder
         if self.isort is None:
