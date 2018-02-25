@@ -383,15 +383,10 @@ class Network:
                 # add name and nodes
                 names.append(sline[0])
                 node_labels.append(sline[1:3])
+                # get control nodes
                 control_source[sline[0]] = sline[3:5]
-
-                # if '.ac' and phase is present:
-                if (analysis[0] == '.ac') & (len(sline) == 7):
-                    values.append(float(sline[5]) * (
-                            np.cos(float(sline[6]) * pi / 180) + np.sin(float(sline[6]) * pi / 180) * 1j))
-                # otherwise...
-                else:
-                    values.append(float(sline[5]))
+                # get gain
+                values.append(float(sline[5]))
 
         # reordering nodes
         unique_names, ii = np.unique(node_labels, return_inverse=True)
