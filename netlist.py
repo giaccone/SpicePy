@@ -224,6 +224,9 @@ class Network:
                         elif line.lower().find('.tf') != -1:    # if .tf is reached save it
                             tf_cmd = line
 
+                        elif line.lower().find('.backanno') != -1:    # skip .backanno if present
+                            pass
+
                         else:    # save analysis type
                             # split into a list
                             analysis = line.split()
