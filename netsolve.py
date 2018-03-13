@@ -119,8 +119,8 @@ def transient_solve(net):
     # ==================
 
     # get time step and tend
-    h = float(net.analysis[1])
-    tend = float(net.analysis[2])
+    h = float(net.convert_unit(net.analysis[1]))
+    tend = float(net.convert_unit(net.analysis[2]))
     # create time array
     net.t = np.arange(0, tend, h)  # if tend is not multiple of h --> net.t[-1] < tend
 
