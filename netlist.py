@@ -129,18 +129,6 @@ class Network:
         :param filename:
         """
 
-        # common attributes
-        (self.names,
-         self.values,
-         self.IC,
-         self.source_type,
-         self.nodes,
-         self.node_label2num,
-         self.node_num,
-         self.analysis,
-         self.plot_cmd,
-         self.tf_cmd) = self.read_netlist(filename)
-
         # initialization of other possible attributes
         self.A = None
         self.G = None
@@ -153,6 +141,19 @@ class Network:
         self.vb = None
         self.ib = None
         self.pb = None
+        self.unit_prefix = {'meg': 'e6', 'f': 'e-15', 'p': 'e-12', 'n': 'e-9', 'u': 'e-6', 'm': 'e-3', 'k': 'e3', 'g': 'e9', 't': 'e12'}
+
+        # common attributes
+        (self.names,
+         self.values,
+         self.IC,
+         self.source_type,
+         self.nodes,
+         self.node_label2num,
+         self.node_num,
+         self.analysis,
+         self.plot_cmd,
+         self.tf_cmd) = self.read_netlist(filename)
 
     def read_netlist(self, filename):
         """
@@ -269,14 +270,14 @@ class Network:
             if sline[0][0].upper() == 'R':  # resistance
                 # add name and value
                 names.append(sline[0])
-                values.append(float(sline[3]))
+                values.append(float(self.convert_unit(sline[3])))
                 node_labels.append(sline[1:3])
 
             # inductor
             elif sline[0][0].upper() == 'L':
                 # add name, value and nodes
                 names.append(sline[0])
-                values.append(float(sline[3]))
+                values.append(float(self.convert_unit(sline[3])))
                 node_labels.append(sline[1:3])
 
                 # for '.tran'
@@ -284,7 +285,7 @@ class Network:
                     # check presence of i.c.
                     if len(sline) == 5:
                         if sline[4].lower().find('ic') != -1:
-                            IC[sline[0]] = float(sline[4].split('=')[1])
+                            IC[sline[0]] = float(self.convert_unit(sline[4].split('=')[1]))
                         else:
                             #IC[sline[0]] = 'Please check this --> ' + sline[-1]
                             # print("Warning: wrong definition of IC for {} --> ".format(sline[0]) + IC[sline[0]])
@@ -298,13 +299,13 @@ class Network:
             elif sline[0][0].upper() == 'C':
                 # add name and value
                 names.append(sline[0])
-                values.append(float(sline[3]))
+                values.append(float(self.convert_unit(sline[3])))
                 node_labels.append(sline[1:3])
 
                 if analysis[0] == '.tran':
                     if len(sline) == 5:
                         if sline[4].lower().find('ic') != -1:
-                            IC[sline[0]] = float(sline[4].split('=')[1])
+                            IC[sline[0]] = float(self.convert_unit(sline[4].split('=')[1]))
                         else:
                             #IC[sline[0]] = 'Please check this --> ' + sline[-1]
                             #print("Warning: wrong definition of IC for {} --> ".format(sline[0]) + IC[sline[0]])
@@ -322,7 +323,7 @@ class Network:
 
                 # if '.ac' and phase is present:
                 if (analysis[0] == '.ac') & (len(sline) == 5):
-                    values.append(float(sline[3]) * (
+                    values.append(float(self.convert_unit(sline[3])) * (
                     np.cos(float(sline[4]) * pi / 180) + np.sin(float(sline[4]) * pi / 180) * 1j))
                 # if '.tran' ...
                 elif analysis[0] == '.tran':
@@ -330,15 +331,15 @@ class Network:
                     if isinstance(sline[-1], list):
                         source_type[sline[0]] = sline[-2]
                         if source_type[sline[0]] == 'pwl':
-                            values.append([[float(k) for k in sline[-1]]])
+                            values.append([[float(self.convert_unit(k)) for k in sline[-1]]])
                         else:
-                            values.append([float(k) for k in sline[-1]])
+                            values.append([float(self.convert_unit(k)) for k in sline[-1]])
                     # otherwise...
                     else:
-                        values.append(float(sline[3]))
+                        values.append(float(self.convert_unit(sline[3])))
                 # otherwise...
                 else:
-                    values.append(float(sline[3]))
+                    values.append(float(self.convert_unit(sline[3])))
 
             # independent voltage sources
             elif sline[0][0].upper() == 'V':
@@ -348,7 +349,7 @@ class Network:
 
                 # if '.ac' and phase is present:
                 if (analysis[0] == '.ac') & (len(sline) == 5):
-                    values.append(float(sline[3]) * (
+                    values.append(float(self.convert_unit(sline[3])) * (
                     np.cos(float(sline[4]) * pi / 180) + np.sin(float(sline[4]) * pi / 180) * 1j))
                 # if '.tran'
                 elif analysis[0] == '.tran':
@@ -356,15 +357,15 @@ class Network:
                     if isinstance(sline[-1], list):
                         source_type[sline[0]] = sline[-2]
                         if source_type[sline[0]] == 'pwl':
-                            values.append([[float(k) for k in sline[-1]]])
+                            values.append([[float(self.convert_unit(k)) for k in sline[-1]]])
                         else:
-                            values.append([float(k) for k in sline[-1]])
+                            values.append([float(self.convert_unit(k)) for k in sline[-1]])
                     # otherwise...
                     else:
-                        values.append(float(sline[3]))
+                        values.append(float(self.convert_unit(sline[3])))
                 # otherwise...
                 else:
-                    values.append(float(sline[3]))
+                    values.append(float(self.convert_unit(sline[3])))
 
         # reordering nodes
         unique_names, ii = np.unique(node_labels, return_inverse=True)
@@ -381,6 +382,20 @@ class Network:
 
         # return network structure
         return names, values, IC, source_type, nodes, node_labels2num, Nn, analysis, plot_cmd, tf_cmd
+
+    def convert_unit(self, string_value):
+        """
+        'convert_unit' convert a unit-prefix in a string with the releted value
+
+        :param string_value: a string with a unit prefic (e.g. '10.5k')
+        :return: the same sting with the numerical value of the unit-prefix (e.g. '10.5e3')
+        """
+        for prefix, prefix_value in self.unit_prefix.items():
+            if prefix in string_value.lower():
+                string_value = string_value.lower().replace(prefix, prefix_value)
+                break
+
+        return string_value
 
     def incidence_matrix(self):
         """
