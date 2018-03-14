@@ -1,4 +1,4 @@
-* Example of operating transient analysis
+* Example of transient analysis
 V1 1 0 10
 R1 1 2 10
 L1 2 3 1m
