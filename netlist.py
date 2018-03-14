@@ -1392,7 +1392,7 @@ class Network:
                     v = self.get_voltage(variable)
 
                     if makesubplot:
-                        plt.axes(axs[0])
+                        plt.sca(axs[0])
                     plt.plot(self.t, v, label=legend_entries[k])
 
 
@@ -1405,19 +1405,19 @@ class Network:
                     i = self.get_current(variable)
 
                     if makesubplot:
-                        plt.axes(axs[1])
+                        plt.sca(axs[1])
                     plt.plot(self.t, i, label=legend_entries[k])
 
 
 
             if makesubplot:
-                plt.axes(axs[0])
+                plt.sca(axs[0])
                 plt.ylabel('voltage (V)', fontsize=16)
                 plt.grid()
                 plt.legend()
                 plt.tight_layout()
 
-                plt.axes(axs[1])
+                plt.sca(axs[1])
                 plt.xlabel('time (s)', fontsize=16)
                 plt.ylabel('current (A)', fontsize=16)
                 plt.grid()
@@ -1480,7 +1480,7 @@ class Network:
             # plot
             import matplotlib.pyplot as plt
             fig, axs = plt.subplots(2, 1)
-            plt.axes(axs[0])
+            plt.sca(axs[0])
             plt.title('tf: ' + tf[0] + '/' + tf[1], fontsize=14)
             if decibel:
                 plt.semilogx(self.f, 20 * np.log10(np.abs(H)))
@@ -1490,7 +1490,7 @@ class Network:
                 plt.ylabel('magnitude', fontsize=14)
             plt.grid()
 
-            plt.axes(axs[1])
+            plt.sca(axs[1])
             plt.semilogx(self.f, np.angle(H) * 180 / np.pi)
             plt.xlabel('frequency (Hz)', fontsize=14)
             plt.ylabel('phase (deg)', fontsize=14)
