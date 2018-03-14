@@ -20,9 +20,9 @@ This document provides information about features and installation procedure. Fo
 At the time of writing (January 6, 2018), the project is based on:
 
 * `Python 3.6.4`
-* `numpy 1.13.3`
+* `numpy 1.14.2`
 * `scipy 1.0.0`
-* `matplotlib 2.1.1`
+* `matplotlib 2.2.0`
 
 This is not a frozen configuration. I'm use to update these packages as soon as an update is available.
 
@@ -30,7 +30,19 @@ Finally, SpicePy should work also with earlier version of Python (but **not** Py
 
 Last but not least, as many other Python tools a convenient method to handle SpicePy is `iPython`, a powerful interactive Python shell where Python can be used interactively.
 
+# Work in progress
+
+Here you can read about aspects that I'm thinking to include in this project. The list does not certifies that I will integrate all it is described. It's a simple list of the topics that potentially will be developed.
+
+* **Controlled sources** In a local branch I've already added VCVSs. I will push this work on GitHub only when all controlled sources will be ready an tested.
+* **non-linearity** I'm planning to implement a non-linear solver based on Newthon-Rapshon method. A rough implementation already exists but it is far from be harmonized to the entire project. Since I prefer *stability* over *new features* I will include non-linearity when I will have some more (free) time that currently I do not have.
+* **GUI** one of my students is implementing a very basic GUI for this code. Basically, it is text-editor for netlists that includes also the tools for the simulation. Right now it is not ready for the final use because it is not stable.
+
 # Feature (and changelog)
+
+## March 14, 2018
+
+* support for unit-prefix in netlists: (`'f = 1e-15'`, `'p = 1e-12'`, `'n  = 1e-9'`, `'u = 1e-6'`, `'m = 1e-3'`, `'k = 1e3'`, `'meg = 1e6'`, `'g = 1e9'`, `'t = 1e-12'`) 
 
 ## January 6, 2018
 
