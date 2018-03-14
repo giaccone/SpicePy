@@ -3,7 +3,7 @@ import netlist as ntl
 from netsolve import net_solve
 
 # read netlist
-net = ntl.Network('ac_network.net')
+net = ntl.Network('ac_single_frequency.net')
 
 # compute the circuit solution
 net_solve(net)
