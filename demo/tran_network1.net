@@ -2,6 +2,6 @@
 I1 0 1 8
 R1 1 0 5
 R2 1 2 5
-L1 2 0 2e-3
-.tran 1e-6 1.2e-3
+L1 2 0 2m
+.tran 1u 1.2m
 .plot v(L1) i(L1) v(R1) i(R1)

@@ -1,13 +1,13 @@
 * Example of AC analysis (band pass filter)
 V1 A 0 100
-L1 A B 1e-3
-C1 B C 1e-6
-R1 C 0 1e3
+L1 A B 1m
+C1 B C 1u
+R1 C 0 1k
 
 * RC network with fc = 1/(2*pi*sqrt(L1*C1))= 5032.92 Hz
 
 * from 1 Hz to 200 Hz with 50 points per decade
-.ac dec 50 50 500000
+.ac dec 50 50 500k
 
 * V(R1)/V(V1) --> band pass filter
 .tf v(R1) v(V1) 

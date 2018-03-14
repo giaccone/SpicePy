@@ -1,7 +1,7 @@
 * Example of SIN source
 V1 1 0 sin(0 325 50 0 0 -18)
-R1 1 2 25e-3
-L1 2 0 1e-3
-.tran 1e-4 600e-3
+R1 1 2 25m
+L1 2 0 1m
+.tran 100u 600m
 .plot v(V1) i(L1)
 .end

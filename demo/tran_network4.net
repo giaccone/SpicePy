@@ -1,7 +1,7 @@
 * Example of operating transient analysis
 V1 1 0 10
 R1 1 2 10
-L1 2 3 1e-3        ; no initial condition is equivalent to ic=0
-C1 3 0 1e-6 ic=-10 ; capacitor with initial condition
-.tran 1e-6 1e-3
+L1 2 3 1m        ; no initial condition is equivalent to ic=0
+C1 3 0 1u ic=-10 ; capacitor with initial condition
+.tran 1u 1m
 .plot v(C1) v(L1) i(L1) v(2) v(1,2)

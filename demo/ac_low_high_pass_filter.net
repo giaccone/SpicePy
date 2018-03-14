@@ -1,11 +1,11 @@
 * Example of AC analysis (low and high pass filter)
 V1 A 0 100
-R1 A B 1e3
-C1 B 0 1e-6
+R1 A B 1k
+C1 B 0 1u
 * RC network with fc = 1/(2*pi*R1*C1)= 159.24 Hz
 
 * from 1 Hz to 200 Hz with 50 points per decade
-.ac dec 50 1 2000
+.ac dec 50 1 2k
 
 * V(C1)/V(V1) --> low pass filter
 * V(R1)/V(V1) --> high pass filter

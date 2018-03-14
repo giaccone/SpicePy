@@ -2,10 +2,10 @@
 V1 1 0 10
 R1 2 1 2 
 R2 2 0 2 
-C3 2 3 200e-6
+C3 2 3 200u
 R4 2 3 10
 I5 3 2 2 90
-L4 3 0 1e-3
+L4 3 0 1m
 
 * the following command is used
 * for a single frequency analysis

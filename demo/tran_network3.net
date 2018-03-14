@@ -1,7 +1,7 @@
 * Example of operating transient analysis
 V1 1 0 10
 R1 1 2 10
-L1 2 3 1e-3
-C1 3 0 1e-6
-.tran 1e-6 1e-3
+L1 2 3 1m
+C1 3 0 1u
+.tran 1u 1m
 .plot v(C1) v(L1) i(L1) v(2) v(1,2)
