@@ -158,6 +158,7 @@ class Network:
          self.values,
          self.IC,
          self.source_type,
+         self.control_source,
          self.nodes,
          self.node_label2num,
          self.node_num,
