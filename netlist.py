@@ -387,7 +387,7 @@ class Network:
                 # get control nodes
                 control_source[sline[0]] = sline[3:5]
                 # get gain
-                values.append(float(sline[5]))
+                values.append(float(self.convert_unit(sline[5])))
 
         # reordering nodes
         unique_names, ii = np.unique(node_labels, return_inverse=True)
