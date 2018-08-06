@@ -919,39 +919,10 @@ class Network:
         if self.vb is None:
             self.branch_voltage()
 
-        ibranch = np.zeros_like(self.vb)
-        cnt_l = 0
-        cnt_v = 0
-        cnt_e = 0
-        for k, (name, val, voltage) in enumerate(zip(self.names, self.values, self.vb)):
-            if name[0].upper() == 'R':
-                ibranch[k, ...] = voltage / val
-            elif name[0].upper() == 'L':
-                ibranch[k, ...] = self.x[self.node_num + cnt_l, ...]
-                cnt_l += 1
-            elif name[0].upper() == 'C':
-                if self.analysis[0].lower() == '.op':    # the current is zero, hence, do nothing
-                    pass
-                elif self.analysis[0].lower() == '.ac':
-                    f = float(self.analysis[-1])
-                    Xc = -1.0 / (2 * np.pi * f * val)
-                    ibranch[k] = voltage / (Xc * 1j)
-                elif self.analysis[0].lower() == '.tran':
-                    from scipy.interpolate import CubicSpline
-                    cs = CubicSpline(self.t, voltage)
-                    csd = cs.derivative()
-                    ibranch[k, ...] = val * csd(self.t)
+        self.ib = np.zeros_like(self.vb)
 
-            elif name[0].upper() == 'V':
-                ibranch[k, ...] = self.x[self.node_num + len(self.isort[1]) + cnt_v, ...]
-                cnt_v += 1
-            elif name[0].upper() == 'I':
-                ibranch[k, ...] = val
-            elif name[0].upper() == 'E':
-                ibranch[k, ...] = self.x[self.node_num + len(self.isort[1]) + len(self.isort[3]) + cnt_e, ...]
-                cnt_e += 1
-
-        self.ib = ibranch
+        for k, name in enumerate(self.names):
+            self.ib[k, ...] = self.get_current(name)
 
     def branch_power(self):
         """
