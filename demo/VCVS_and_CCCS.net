@@ -1,0 +1,6 @@
+* VCVS and CCCS
+F1 A 0 E1 3
+E1 B 0 A 0 2
+R1 B A 2
+I1 0 A 8
+.op

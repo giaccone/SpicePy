@@ -145,3 +145,11 @@ ref = np.loadtxt('./tran_network7/solution.txt', skiprows=1)
 ref = np.interp(net.t, ref[:,0],ref[:,1])
 rms = np.sqrt(np.sum((ref - val) ** 2)) / ref.size / np.abs(ref).max()
 check(rms, 1e-5)
+
+# VCVS and CCCS
+print(' * Testing VCVS & CCCS ...', end=' ',flush=True)
+net = ntl.Network('../demo/VCVS_and_CCCS.net')
+net_solve(net)
+ref = np.loadtxt('./VCVS_and_CCCS/solution.txt')
+rms = np.sqrt(np.sum((ref - net.x) ** 2)) / ref.size
+check(rms, 1e-9)
