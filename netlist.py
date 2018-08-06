@@ -194,7 +194,7 @@ class Network:
         analysis = None
 
         # initial letter of all available components
-        initials = ['V', 'I', 'R', 'C', 'L', 'E']
+        initials = ['V', 'I', 'R', 'C', 'L', 'E', 'F']
         components = []
 
         # 1) get the analysis type
@@ -384,6 +384,16 @@ class Network:
                 control_source[sline[0]] = sline[3:5]
                 # get gain
                 values.append(float(self.convert_unit(sline[5])))
+
+            # voltage controlled voltage sources
+            elif sline[0][0].upper() == 'F':
+                # add name and nodes
+                names.append(sline[0])
+                node_labels.append(sline[1:3])
+                # get control Vsens
+                control_source[sline[0]] = sline[3]
+                # get gain
+                values.append(float(self.convert_unit(sline[4])))
 
         # reordering nodes
         unique_names, ii = np.unique(node_labels, return_inverse=True)
