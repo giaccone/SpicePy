@@ -1217,6 +1217,7 @@ class Network:
         ivcvs = []
         icccs = []
         ivccs = []
+        iccvs = []
         for k, ele in enumerate(self.names):
             if ele[0].upper() == 'R':
                 ires.append([int(ele[1:]), k])
@@ -1234,6 +1235,8 @@ class Network:
                 icccs.append([int(ele[1:]), k])
             elif ele[0].upper() == 'G':
                 ivccs.append([int(ele[1:]), k])
+            elif ele[0].upper() == 'H':
+                iccvs.append([int(ele[1:]), k])
 
         self.isort = []
         self.isort.append([k for foo, k in sorted(ires)])
@@ -1244,6 +1247,7 @@ class Network:
         self.isort.append([k for foo, k in sorted(ivcvs)])
         self.isort.append([k for foo, k in sorted(icccs)])
         self.isort.append([k for foo, k in sorted(ivccs)])
+        self.isort.append([k for foo, k in sorted(iccvs)])
 
     def print(self, variable='all', polar=False, message=False):
 
