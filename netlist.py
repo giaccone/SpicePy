@@ -198,7 +198,7 @@ class Network:
         analysis = None
 
         # initial letter of all available components
-        initials = ['V', 'I', 'R', 'C', 'L', 'E', 'F', 'G']
+        initials = ['V', 'I', 'R', 'C', 'L', 'E', 'F', 'G', 'H']
         components = []
 
         # 1) get the analysis type
@@ -389,8 +389,8 @@ class Network:
                 # get gain
                 values.append(float(self.convert_unit(sline[5])))
 
-            # voltage controlled voltage sources
-            elif sline[0][0].upper() == 'F':
+            # CCCS or CCVS
+            elif (sline[0][0].upper() == 'F') | (sline[0][0].upper() == 'H'):
                 # add name and nodes
                 names.append(sline[0])
                 node_labels.append(sline[1:3])
