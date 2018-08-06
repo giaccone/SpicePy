@@ -703,7 +703,7 @@ class Network:
             # get Vsens and its index
             Vsens = self.control_source[self.names[indF]]
             h = sorted(self.isort[3]).index(self.names.index(Vsens))
-            n = self.node_num + h
+            n = self.node_num + len(self.isort[1]) + h
 
             if N1 == 0: # if grounded to N1 ...
                 g.append(-self.values[indF])
