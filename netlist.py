@@ -94,7 +94,7 @@ class Network:
                                                     self.control_source[ele][0],
                                                     self.control_source[ele][1],
                                                     val)
-            elif ele[0].upper() == 'F':
+            elif (ele[0].upper() == 'F') | (ele[0].upper() == 'H'):
                 msg += "{} {} {} {} {}\n".format(ele, num2node_label[nodes[0]], num2node_label[nodes[1]],
                                                  self.control_source[ele],
                                                  val)
