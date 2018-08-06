@@ -486,6 +486,7 @@ class Network:
         indexL = sorted(self.isort[1])
         indexV = sorted(self.isort[3])
         indexE = sorted(self.isort[5])
+        indexF = sorted(self.isort[6])
 
         # cycle on resistances
         for ir in indexR:
@@ -694,6 +695,32 @@ class Network:
                 g.append(self.values[ie])
                 g_row.append(self.node_num + len(indexL) + len(indexV) + k)
                 g_col.append(N2 - 1)
+
+        # cycle on CCCSs
+        for k, indF in enumerate(indexF):
+            # get nodes
+            N1, N2 = self.nodes[indF]
+            # get Vsens and its index
+            Vsens = self.control_source[self.names[indF]]
+            h = sorted(self.isort[3]).index(self.names.index(Vsens))
+            n = self.node_num + h
+
+            if N1 == 0: # if grounded to N1 ...
+                g.append(-self.values[indF])
+                g_row.append(N2 - 1)
+                g_col.append(n)
+            elif N2 == 0: # if grounded to N2 ...
+                g.append(self.values[indF])
+                g_row.append(N1 - 1)
+                g_col.append(n)
+            else: # if not grounded ...
+                g.append(self.values[indF])
+                g_row.append(N1 - 1)
+                g_col.append(n)
+                #
+                g.append(-self.values[indF])
+                g_row.append(N2 - 1)
+                g_col.append(n)
 
         # create conductance matrix
         self.G = csr_matrix((g,(g_row,g_col)))
