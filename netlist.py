@@ -488,6 +488,7 @@ class Network:
         indexE = sorted(self.isort[5])
         indexF = sorted(self.isort[6])
         indexG = sorted(self.isort[7])
+        indexH = sorted(self.isort[8])
 
         # cycle on resistances
         for ir in indexR:
@@ -728,7 +729,7 @@ class Network:
                 g_row.append(N2 - 1)
                 g_col.append(n)
 
-        # cycle on CCCSs
+        # cycle on VCCSs
         for k, iG in enumerate(indexG):
             # get nodes
             N1, N2 = self.nodes[iG]
@@ -751,6 +752,41 @@ class Network:
                 g.append(-self.values[iG])
                 g_row.append(N2 - 1)
                 g_col.append(Nc1 - 1)
+
+        # cycle on CCVSs
+        for k, iH in enumerate(indexH):
+            # get nodes
+            N1, N2 = self.nodes[iH]
+            # get Vsens
+            Vsens = self.control_source[self.names[iH]]
+            # get index of Vsens
+            if Vsens[0].upper() == 'V':
+                h = sorted(self.isort[3]).index(self.names.index(Vsens))
+                n = self.node_num + len(self.isort[1]) + h
+            elif Vsens[0].upper() == 'E':
+                h = sorted(self.isort[5]).index(self.names.index(Vsens))
+                n = self.node_num + len(self.isort[1]) + len(self.isort[3]) + h
+
+            if N1 != 0:
+                g.append(1)
+                g_row.append(N1 - 1)
+                g_col.append(self.node_num + len(self.isort[1]) + len(self.isort[3]) + len(self.isort[5]) + k)
+                #
+                g.append(1)
+                g_row.append(self.node_num + len(self.isort[1]) + len(self.isort[3]) + len(self.isort[5]) + k)
+                g_col.append(N1 - 1)
+            if N2 != 0:
+                g.append(-1)
+                g_row.append(N2 - 1)
+                g_col.append(self.node_num + len(self.isort[1]) + len(self.isort[3]) + len(self.isort[5]) + k)
+                #
+                g.append(-1)
+                g_row.append(self.node_num + len(self.isort[1]) + len(self.isort[3]) + len(self.isort[5]) + k)
+                g_col.append(N2 - 1)
+
+            g.append(-self.values[iH])
+            g_row.append(self.node_num + len(self.isort[1]) + len(self.isort[3]) + len(self.isort[5]) + k)
+            g_col.append(n)
 
         # create conductance matrix
         self.G = csr_matrix((g,(g_row,g_col)))
@@ -830,7 +866,7 @@ class Network:
         if self.analysis[0] == '.tran':
             def fun(t):
                 # initialize rhs
-                rhs = [0] * (self.node_num + len(self.isort[1]) + len(self.isort[3]) + len(self.isort[5]))
+                rhs = [0] * (self.node_num + len(self.isort[1]) + len(self.isort[3]) + len(self.isort[5]) + len(self.isort[8]))
 
                 # get index
                 NL = len(self.isort[1])
@@ -887,7 +923,7 @@ class Network:
         else:
 
             # initialize rhs
-            rhs = [0] * (self.node_num + len(self.isort[1]) + len(self.isort[3]) + len(self.isort[5]))
+            rhs = [0] * (self.node_num + len(self.isort[1]) + len(self.isort[3]) + len(self.isort[5]) + len(self.isort[8]))
 
             # get index
             NL = len(self.isort[1])
