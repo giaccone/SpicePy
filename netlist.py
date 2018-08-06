@@ -1227,8 +1227,14 @@ class Network:
             elif variable[0] == 'G':
                 i[k, ...] = self.values[self.names.index(variable)] * self.get_voltage(self.control_source[variable])
 
-
-
+            # CCVS
+            elif variable[0] == 'H':
+                # get sub-index of 'H'
+                h = sorted(self.isort[8]).index(self.names.index(variable))
+                # index of the related current in the solution
+                n = self.node_num + len(self.isort[1]) + len(self.isort[3]) + len(self.isort[5]) + h
+                # get current
+                i[k, ...] = self.x[n, ...]
 
         # remove one dimension for single voltage in .tran
         if len(i.shape) == 2 and i.shape[0] == 1:
