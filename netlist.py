@@ -1264,6 +1264,10 @@ class Network:
             msg += '             branch voltages\n'
             msg += '==============================================\n'
 
+            # check presence of branch voltages
+            if self.vb is None:
+                self.branch_voltage()
+
             for k, index in enumerate(self.isort):
                 if polar:
                     if k == 0:  # resistors
@@ -1313,6 +1317,10 @@ class Network:
             msg += '             branch currents\n'
             msg += '==============================================\n'
 
+            # check presence of branch currents
+            if self.ib is None:
+                self.branch_current()
+
             for k, index in enumerate(self.isort):
                 if polar:
                     if k == 0:  # resistors
@@ -1358,6 +1366,10 @@ class Network:
                             msg += '----------------------------------------------\n'
 
         if variable.lower() == 'power':
+
+            # check presence of branch powers
+            if self.pb is None:
+                self.branch_power()
 
             if self.analysis[0].lower() == '.op':
                 unitsR = 'W'
@@ -1424,6 +1436,10 @@ class Network:
                             msg += '----------------------------------------------\n'
 
         elif variable.lower() == 'all':
+
+            # check presence of branch powers
+            if self.pb is None:
+                self.branch_power()
 
             if self.analysis[0].lower() == '.op':
                 unitsR = 'W'
