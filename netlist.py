@@ -89,7 +89,7 @@ class Network:
                     fmt = "{} {} {} {}(" + "{} " * (len(val) - 1) + "{})\n"
                     msg += fmt.format(ele, num2node_label[nodes[0]], num2node_label[nodes[1]], self.source_type[ele], *val)
             # controlled sources
-            elif ele[0].upper() == 'E':
+            elif (ele[0].upper() == 'E') | (ele[0].upper() == 'G'):
                 msg += "{} {} {} {} {} {}\n".format(ele, num2node_label[nodes[0]], num2node_label[nodes[1]],
                                                     self.control_source[ele][0],
                                                     self.control_source[ele][1],
