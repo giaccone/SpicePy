@@ -1174,19 +1174,22 @@ class Network:
         ivolt = []
         icur = []
         ivcvs = []
-        for k,ele in enumerate(self.names):
+        icccs = []
+        for k, ele in enumerate(self.names):
             if ele[0].upper() == 'R':
-                ires.append([int(ele[1:]),k])
+                ires.append([int(ele[1:]), k])
             elif ele[0].upper() == 'L':
-                iind.append([int(ele[1:]),k])
+                iind.append([int(ele[1:]), k])
             elif ele[0].upper() == 'C':
-                icap.append([int(ele[1:]),k])
+                icap.append([int(ele[1:]), k])
             elif ele[0].upper() == 'V':
-                ivolt.append([int(ele[1:]),k])
+                ivolt.append([int(ele[1:]), k])
             elif ele[0].upper() == 'I':
-                icur.append([int(ele[1:]),k])
+                icur.append([int(ele[1:]), k])
             elif ele[0].upper() == 'E':
-                ivcvs.append([int(ele[1:]),k])
+                ivcvs.append([int(ele[1:]), k])
+            elif ele[0].upper() == 'F':
+                icccs.append([int(ele[1:]), k])
 
         self.isort = []
         self.isort.append([k for foo, k in sorted(ires)])
@@ -1195,6 +1198,7 @@ class Network:
         self.isort.append([k for foo, k in sorted(ivolt)])
         self.isort.append([k for foo, k in sorted(icur)])
         self.isort.append([k for foo, k in sorted(ivcvs)])
+        self.isort.append([k for foo, k in sorted(icccs)])
 
     def print(self, variable='all', polar=False, message=False):
 
