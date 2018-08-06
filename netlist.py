@@ -94,6 +94,10 @@ class Network:
                                                     self.control_source[ele][0],
                                                     self.control_source[ele][1],
                                                     val)
+            elif ele[0].upper() == 'F':
+                msg += "{} {} {} {} {}\n".format(ele, num2node_label[nodes[0]], num2node_label[nodes[1]],
+                                                 self.control_source[ele],
+                                                 val)
             # if val is complex --> ele is a phasor
             elif np.iscomplex(val):
                 msg += "{} {} {} {} {}\n".format(ele, num2node_label[nodes[0]], num2node_label[nodes[1]], np.abs(val), np.angle(val) * 180/np.pi)
