@@ -1328,7 +1328,7 @@ class Network:
                         for h in index:
                             msg += voltage_fmt_polar.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
                             msg += '----------------------------------------------\n'
-                    elif (k == 3) | (k == 5):  # voltage sources or VCVS
+                    elif (k == 3) | (k == 5) | (k ==8):  # voltage sources or VCVS or CCVS
                         for h in index:
                             msg += voltage_fmt_polar.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
                             msg += '----------------------------------------------\n'
@@ -1349,7 +1349,7 @@ class Network:
                         for h in index:
                             msg += voltage_fmt.format(self.names[h], self.vb[h])
                             msg += '----------------------------------------------\n'
-                    elif (k == 3) | (k == 5):  # voltage sources or VCVS
+                    elif (k == 3) | (k == 5) | (k ==8):  # voltage sources or VCVS or CCVS
                         for h in index:
                             msg += voltage_fmt.format(self.names[h], self.vb[h])
                             msg += '----------------------------------------------\n'
@@ -1381,7 +1381,7 @@ class Network:
                         for h in index:
                             msg += current_fmt_polar.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
                             msg += '----------------------------------------------\n'
-                    elif (k == 3) | (k == 5):  # voltage sources or VCVS
+                    elif (k == 3) | (k == 5) | (k ==8):  # voltage sources or VCVS or CCVS
                         for h in index:
                             msg += current_fmt_polar.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
                             msg += '----------------------------------------------\n'
@@ -1402,7 +1402,7 @@ class Network:
                         for h in index:
                             msg += current_fmt.format(self.names[h], self.ib[h])
                             msg += '----------------------------------------------\n'
-                    elif (k == 3) | (k == 5):  # voltage sources or VCVS
+                    elif (k == 3) | (k == 5) | (k ==8):  # voltage sources or VCVS or CCVS
                         for h in index:
                             msg += current_fmt.format(self.names[h], self.ib[h])
                             msg += '----------------------------------------------\n'
@@ -1451,7 +1451,7 @@ class Network:
                         for h in index:
                             msg += power_fmt_polar.format(self.names[h], np.abs(self.pb[h]), unitsC, np.angle(self.pb[h], deg=True))
                             msg += '----------------------------------------------\n'
-                    elif (k == 3) | (k == 5):  # voltage sources or VCVS
+                    elif (k == 3) | (k == 5) | (k ==8):  # voltage sources or VCVS or CCVS
                         for h in index:
                             msg += power_fmt_polar.format(self.names[h], np.abs(self.pb[h]), unitsV, np.angle(self.pb[h], deg=True))
                             msg += '----------------------------------------------\n'
@@ -1472,7 +1472,7 @@ class Network:
                         for h in index:
                             msg += power_fmt.format(self.names[h], self.pb[h], unitsC)
                             msg += '----------------------------------------------\n'
-                    elif (k == 3) | (k == 5):  # voltage sources or VCVS
+                    elif (k == 3) | (k == 5) | (k ==8):  # voltage sources or VCVS or CCVS
                         for h in index:
                             msg += power_fmt.format(self.names[h], self.pb[h], unitsV)
                             msg += '----------------------------------------------\n'
@@ -1527,7 +1527,7 @@ class Network:
                             msg += current_fmt_polar.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
                             msg += power_fmt_polar.format(self.names[h], np.abs(self.pb[h]), unitsC , np.angle(self.pb[h], deg=True))
                             msg += '----------------------------------------------\n'
-                    elif (k == 3) | (k == 5):  # voltage sources or VCVS
+                    elif (k == 3) | (k == 5) | (k ==8):  # voltage sources or VCVS or CCVS
                         for h in index:
                             msg += voltage_fmt_polar.format(self.names[h], np.abs(self.vb[h]), np.angle(self.vb[h], deg=True))
                             msg += current_fmt_polar.format(self.names[h], np.abs(self.ib[h]), np.angle(self.ib[h], deg=True))
@@ -1559,7 +1559,7 @@ class Network:
                             msg += current_fmt.format(self.names[h], self.ib[h])
                             msg += power_fmt.format(self.names[h], self.pb[h], unitsC)
                             msg += '----------------------------------------------\n'
-                    elif (k == 3) | (k == 5):  # voltage sources or VCVS
+                    elif (k == 3) | (k == 5) | (k ==8):  # voltage sources or VCVS or CCVS
                         for h in index:
                             msg += voltage_fmt.format(self.names[h], self.vb[h])
                             msg += current_fmt.format(self.names[h], self.ib[h])
