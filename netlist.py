@@ -1179,6 +1179,15 @@ class Network:
                 # get current
                 i[k, ...] = self.x[n, ...]
 
+            # CCCS
+            elif variable[0] == 'F':
+                # get Vsens
+                Vsens = self.control_source[variable]
+                # get current
+                i[k, ...] = self.get_current(Vsens) * self.values[self.names.index(variable)]
+
+
+
 
         # remove one dimension for single voltage in .tran
         if len(i.shape) == 2 and i.shape[0] == 1:
