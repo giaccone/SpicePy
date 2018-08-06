@@ -1187,6 +1187,10 @@ class Network:
                 # get current
                 i[k, ...] = self.get_current(Vsens) * self.values[self.names.index(variable)]
 
+            # VCCS
+            elif variable[0] == 'G':
+                i[k, ...] = self.values[self.names.index(variable)] * self.get_voltage(self.control_source[variable])
+
 
 
 
