@@ -1,0 +1,11 @@
+* VCCS and CCVS
+V1 A 0 10
+R2 B C 5
+G1 C B A B 2.6
+R1 B A 1
+R3 C 0 1
+H1 D 0 V1 3
+R4 E D 2
+R5 E 0 4
+I1 0 E 4.5
+.op

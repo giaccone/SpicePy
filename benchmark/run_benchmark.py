@@ -153,3 +153,11 @@ net_solve(net)
 ref = np.loadtxt('./VCVS_and_CCCS/solution.txt')
 rms = np.sqrt(np.sum((ref - net.x) ** 2)) / ref.size
 check(rms, 1e-9)
+
+# VCVS and CCCS
+print(' * Testing VCCS & CCVS ...', end=' ',flush=True)
+net = ntl.Network('../demo/VCCS_and_CCVS.net')
+net_solve(net)
+ref = np.loadtxt('./VCCS_and_CCVS/solution.txt')
+rms = np.sqrt(np.sum((ref - net.x) ** 2)) / ref.size
+check(rms, 1e-9)

@@ -1,0 +1,13 @@
+* X:\Dropbox (Politecnico di Torin)\mycommon\SpicePy\benchmark\VCCS_and_CCVS\VCCS_and_CCVS.ASC
+V1 N001 0 10
+R2 N002 N005 5
+G1 N005 N002 N001 N002 2.6
+R1 N002 N001 1
+R3 N005 0 1
+H1 N003 0 V1 3
+R4 N004 N003 2
+R5 N004 0 4
+I1 0 N004 4.5
+.op
+.backanno
+.end
