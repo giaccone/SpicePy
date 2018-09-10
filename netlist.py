@@ -711,6 +711,9 @@ class Network:
             elif Vsens[0].upper() == 'E':
                 h = sorted(self.isort[5]).index(self.names.index(Vsens))
                 n = self.node_num + len(self.isort[1]) + len(self.isort[3]) + h
+            elif Vsens[0].upper() == 'H':
+                h = sorted(self.isort[8]).index(self.names.index(Vsens))
+                n = self.node_num + len(self.isort[1]) + len(self.isort[3]) + len(self.isort[5]) + h
 
             if N1 == 0: # if grounded to N1 ...
                 g.append(-self.values[indF])
@@ -766,6 +769,9 @@ class Network:
             elif Vsens[0].upper() == 'E':
                 h = sorted(self.isort[5]).index(self.names.index(Vsens))
                 n = self.node_num + len(self.isort[1]) + len(self.isort[3]) + h
+            elif Vsens[0].upper() == 'H':
+                h = sorted(self.isort[8]).index(self.names.index(Vsens))
+                n = self.node_num + len(self.isort[1]) + len(self.isort[3]) + len(self.isort[5]) + h
 
             if N1 != 0:
                 g.append(1)
