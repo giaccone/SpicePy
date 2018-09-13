@@ -1087,7 +1087,12 @@ class Network:
                     if len(nodes) == 2:
                         v[k,...] = self.x[nodes[0], ...] - self.x[nodes[1], ...]
                     else:
-                        v[k,...] = self.x[nodes[0], ...]
+                        if self.nodes[id][0] != 0:
+                            sign = 1
+                        else:
+                            sign = -1
+                        
+                        v[k,...] = self.x[nodes[0], ...] * sign
                 else:
                     node_labels = variable.split(',')
                     node_number = [self.node_label2num[k] for k in node_labels]
@@ -1095,7 +1100,12 @@ class Network:
                     if len(nodes) == 2:
                         v[k,...] = self.x[nodes[0], ...] - self.x[nodes[1], ...]
                     else:
-                        v[k,...] = self.x[nodes[0], ...]
+                        if node_number[0] != 0:
+                            sign = 1
+                        else:
+                            sign = -1
+
+                        v[k,...] = self.x[nodes[0], ...] * sign
 
         else:  # if the input is a node-pair list
 
@@ -1117,7 +1127,12 @@ class Network:
                 if len(nodes) == 2:
                     v[k, ...] = self.x[nodes[0], ...] - self.x[nodes[1], ...]
                 else:
-                    v[k, ...] = self.x[nodes[0], ...]
+                    if node_number[0] != 0:
+                        sign = 1
+                    else:
+                        sign = -1
+                    
+                    v[k, ...] = self.x[nodes[0], ...] * sign
 
         # remove one dimension for single voltage in .tran
         if len(v.shape) == 2 and v.shape[0] == 1:
