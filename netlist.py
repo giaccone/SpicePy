@@ -1029,7 +1029,7 @@ class Network:
             raise ValueError("frequency_span works only for .ac analyses")
 
         if self.analysis[1].lower() == 'lin':
-            npt = float(self.analysis[2])
+            npt = int(self.analysis[2])
             fs = float(self.convert_unit(self.analysis[3]))
             fe = float(self.convert_unit(self.analysis[4]))
             self.f = np.linspace(fs, fe, npt)
@@ -1038,7 +1038,7 @@ class Network:
             npt_d = float(self.analysis[2])
             fs = np.log10(float(self.convert_unit(self.analysis[3])))
             fe = np.log10(float(self.convert_unit(self.analysis[4])))
-            self.f = np.logspace(fs, fe, np.ceil(npt_d * (fe - fs)))
+            self.f = np.logspace(fs, fe, int(np.ceil(npt_d * (fe - fs)).item()))
 
         elif self.analysis[1].lower() == 'oct':
             npt_d = float(self.analysis[2])
