@@ -1,6 +1,6 @@
 # import SciPy modules
-import netlist as ntl
-from netsolve import net_solve
+import spicepy.netlist as ntl
+from spicepy.netsolve import net_solve
 import matplotlib.pyplot as plt
 plt.ion()
 

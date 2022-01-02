@@ -14,7 +14,7 @@
 # ==================
 from scipy.sparse import csr_matrix
 import numpy as np
-import transient_sources as tsr
+import spicepy.transient_sources as tsr
 
 # ==================
 # constants

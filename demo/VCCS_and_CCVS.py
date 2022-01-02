@@ -1,6 +1,6 @@
 # import SpicePy modules
-import netlist as ntl
-from netsolve import net_solve
+import spicepy.netlist as ntl
+from spicepy.netsolve import net_solve
 
 # read netlist
 net = ntl.Network('VCCS_and_CCVS.net')

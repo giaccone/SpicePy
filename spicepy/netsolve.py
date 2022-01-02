@@ -13,7 +13,7 @@
 # ==================
 from scipy.sparse.linalg import spsolve
 import numpy as np
-import transient_sources as tsr
+import spicepy.transient_sources as tsr
 
 
 def dc_solve(net):
