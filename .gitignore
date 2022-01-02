@@ -3,4 +3,5 @@
 *.raw
 /.vscode
 .directory
-
+/dist
+/spicepy.egg-info
