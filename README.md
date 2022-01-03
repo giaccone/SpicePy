@@ -69,7 +69,7 @@ pip install spicepy
 
 If everything is configured correctly, you will obtain the following results:
 <p align="center">
-<img src="https://raw.githubusercontent.com/giaccone/SpicePy/master/benchmark/run_benchmark.png" width="400">
+<img src="https://raw.githubusercontent.com/giaccone/SpicePy/master/benchmark/run_benchmark.png" width="800">
 </p>
 
 # 4. Work in progress
