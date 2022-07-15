@@ -132,7 +132,7 @@ def pulse(V1, V2, Td=0, Tr=None, Tf=None, Pw=None, Period=None, t=None):
 
     # if input is scalar convert out to scalar too
     if out.size == 1:
-        out = np.item(out)
+        out = out.item()
 
     return out
 
@@ -174,7 +174,7 @@ def sin(Vo, Va, Freq=None, Td=0, Df=0, Phase=0, t=None):
 
     # if input is scalar convert out to scalar too
     if out.size == 1:
-        out = np.asscalar(out)
+        out = out.item()
 
     return out
 
@@ -233,6 +233,6 @@ def exp(V1, V2, Td1=0, tau1=None, Td2=None, tau2=None, t=None):
 
     # if input is scalar convert out to scalar too
     if out.size == 1:
-        out = np.asscalar(out)
+        out = out.item()
 
     return out
