@@ -1047,7 +1047,7 @@ class Network:
             self.f = np.logspace(fs, fe, int(np.ceil(npt_d * (fe - fs)).item()), base=2)
 
         if self.f.size == 1:
-            self.f = np.asscalar(self.f)
+            self.f = np.item(self.f)
 
     def get_voltage(self, arg):
         """

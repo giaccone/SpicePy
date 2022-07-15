@@ -132,7 +132,7 @@ def pulse(V1, V2, Td=0, Tr=None, Tf=None, Pw=None, Period=None, t=None):
 
     # if input is scalar convert out to scalar too
     if out.size == 1:
-        out = np.asscalar(out)
+        out = np.item(out)
 
     return out
 
