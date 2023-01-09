@@ -48,7 +48,7 @@ def ac_solve(net):
         # single frequency solution
         net.x = spsolve(net.G + 1j * 2 * np.pi * net.f * net.C, net.rhs)
     else:
-        net.x = np.zeros((net.G.shape[0], net.f.size), dtype=np.complex)
+        net.x = np.zeros((net.G.shape[0], net.f.size), dtype=complex)
         for k, f in enumerate(net.f):
             net.x[:, k] = spsolve(net.G + 1j * 2 * np.pi * f * net.C, net.rhs)
 
